@@ -3,6 +3,7 @@ var server = require('http').Server(app);
 var formidable = require('formidable');
 var fs = require('fs-extra');
 var io = require('socket.io')(server);
+var serveIndex = require('serve-index');
 
 const uploadDir = __dirname + '/uploads/';
 
@@ -14,9 +15,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.get('/', function (req, res) {
-   res.send('nope');
-});
+app.use(serveIndex(__dirname));
 
 app.get('/*.*', function (req, res) {
    res.sendFile( __dirname + req.url );

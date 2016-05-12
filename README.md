@@ -7,4 +7,4 @@ terminal commands:
 * `npm install`
 * `npm start`
 
-Open browser to `http://localhost:3000/{template name}`  
+open browser to `http://localhost:3000` and select and html file  
