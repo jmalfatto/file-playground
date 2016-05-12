@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>File Drag & Drop</title>
+
+    <link href="https://npmcdn.com/basscss@8.0.1/css/basscss.min.css" rel="stylesheet">
+    
+    <style>
+        #dropbox {
+            text-align: center;
+            line-height: 10em;
+            border-style: dashed;
+            border-color: gray;
+            margin-bottom: 16px;
+            font-family: monospace;
+        }
+        #dropbox.hover {
+            border-color: red;
+        }
+        .obj { 
+            max-height: 300px;
+            margin-right: 1em; 
+        }
+    </style>
+    
+</head>
+
+<body>
+    <div id="dropbox">drop files here</div>
+    
+    <div id="preview"></div>
+    
+    <script>
+        var dropbox = document.getElementById("dropbox"),
+            preview = document.getElementById("preview");
+
+        window.addEventListener("dragenter", stopIt, false);
+        window.addEventListener("dragover", stopIt, false);
+        window.addEventListener("drop", stopIt, false);
+
+        dropbox.addEventListener("dragenter", stopIt, false);
+        dropbox.addEventListener("dragover", dragOver, false);
+        dropbox.addEventListener("drop", drop, false);
+        
+        function stopIt(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        
+        function dragOver(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            e.target.className = "hover";
+        }
+        
+        function drop(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            var dt = e.dataTransfer;
+            var files = dt.files;
+
+            handleFiles(files);
+            
+            e.target.className = "";
+        }
+        
+        function handleFiles(files) {
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var imageType = /^image\//;
+                
+                if (!imageType.test(file.type)) {
+                    alert('nope');
+                    continue;
+                }
+                
+                var img = document.createElement("img");
+                img.classList.add("obj");
+                img.file = file;
+                preview.appendChild(img); // Assuming that "preview" is the div output where the content will be displayed.
+                
+                var reader = new FileReader();
+                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(img);
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
