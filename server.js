@@ -15,8 +15,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.use(serveIndex(__dirname));
-
 app.get('/*.*', function (req, res) {
    res.sendFile( __dirname + req.url );
 });
@@ -47,10 +45,12 @@ app.post('/upload', function (req, res) {
     res.send('Thank you');
 });
 
-io.on('connection', function (socket){
+app.use('/', serveIndex(__dirname));
+
+io.on('connection', (socket) => {
     console.log('a user connected');
 });
 
-server.listen(app.get('port'), function () {
+server.listen(app.get('port'), () => {
     console.log('Express running on http://localhost:' + app.get('port'));
 });
