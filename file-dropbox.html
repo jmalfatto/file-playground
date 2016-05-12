@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dropbox</title>
+    <style>
+        #container {
+            margin: 1em;
+        }
+        #preview {
+            margin-top: 1em;
+        }
+        .obj {
+            max-height: 300px;
+            margin-right: 1em;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <div id="preview"></div>
+</div>
+
+<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="lekagcdtwqd2389"></script>
+
+<script>
+    preview = document.getElementById('preview');
+
+    var options = options = {
+
+        // Required. Called when a user selects an item in the Chooser.
+        success: function(files) {
+            console.log(files);
+            for(var i = 0; i < files.length; i++) {
+                var img = document.createElement('img');
+                img.classList.add('obj');
+                img.src = files[i].link;
+                preview.appendChild(img);
+            }
+        },
+
+        // Optional. Called when the user closes the dialog without selecting a file
+        // and does not include any parameters.
+        cancel: function() {
+
+        },
+
+        // Optional. "preview" (default) is a preview link to the document for sharing,
+        // "direct" is an expiring link to download the contents of the file. For more
+        // information about link types, see Link types below.
+        linkType: 'direct', // or "direct"
+
+        // Optional. A value of false (default) limits selection to a single file, while
+        // true enables multiple file selection.
+        multiselect: true, // or true
+
+        // Optional. This is a list of file extensions. If specified, the user will
+        // only be able to select files with these extensions. You may also specify
+        // file types, such as "video" or "images" in the list. For more information,
+        // see File types below. By default, all extensions are allowed.
+        extensions: ['.png', '.jpg', '.gif'],
+    };
+
+    var button = Dropbox.createChooseButton(options);
+    document.getElementById('container').appendChild(button);
+</script>
+
+</body>
+</html>
