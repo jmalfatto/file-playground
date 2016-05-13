@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Dropbox</title>
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <style>
         #container {
             margin: 1em;
@@ -14,11 +15,26 @@
             max-height: 300px;
             margin-right: 1em;
         }
+        .btn {
+            cursor: pointer;
+            border: solid 1px dodgerblue;
+            padding: .5em;
+            margin: .5em;
+            width: 72px;
+            text-align: center;
+            border-radius: 10px;
+            height: 72px;
+        }
+        .ion-social-dropbox:before {
+            font-size: 75px;
+            color: dodgerblue;
+        }
     </style>
 </head>
 <body>
 
 <div id="container">
+    <div class="btn ion-social-dropbox" onclick="openDropbox()"></div>
     <div id="preview"></div>
 </div>
 
@@ -62,8 +78,13 @@
         extensions: ['.png', '.jpg', '.gif'],
     };
 
-    var button = Dropbox.createChooseButton(options);
-    document.getElementById('container').appendChild(button);
+    // out-of-the-box version
+    //var button = Dropbox.createChooseButton(options);
+    //document.getElementById('container').appendChild(button);
+
+    function openDropbox() {
+        Dropbox.choose(options);
+    }
 </script>
 
 </body>
