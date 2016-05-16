@@ -1,3 +1,9 @@
+/*
+ Combines Ray Camden's XHR2 demo (see url below) with socket.io demo
+
+ https://www.raymondcamden.com/2016/05/05/uploading-multiple-files-at-once-with-ajax-and-xhr2/
+*/
+
 var $f1, $f2, $f3;
 
 $(document).ready(function() {
@@ -29,6 +35,8 @@ function processForm(e) {
     
 }
 
+
+// 
 var socket = io();
 socket.on('news', function (data) {
     console.log(data);
