@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Adjust Image Levels</title>
+
+        <style>
+            .container {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+            .preview {
+                margin: 0 auto;
+            }
+            .controls {
+                display: inherit;
+                flex-direction: inherit;
+                width: 100%;
+            }
+            .control {
+                display: inherit;
+                flex-direction: inherit;
+                width: 100%;
+                font-family: sans-serif;
+                margin: 0.5em 15%;
+            }
+            .control-label {
+                width: 30%;
+            }
+            .slider {
+                width: 70%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <canvas class="preview" width="500" height="500"></canvas>
+            <div class="controls">
+                <div class="control">
+                    <label class="control-label">Brightness</label>
+                    <input class="slider" type="range" id="brightness" value="100" min="0" max="200">
+                </div>
+                <div class="control">
+                    <label class="control-label">Contrast</label>
+                    <input class="slider" type="range" id="contrast" value="100" min="0" max="200">
+                </div>
+                <div class="control">
+                    <label class="control-label">Color Saturation</label>
+                    <input class="slider" type="range" id="saturate" value="100" min="0" max="200">
+                </div>
+            </div>
+        </div>
+        <script>
+            var context = document.querySelector('.preview').getContext('2d');
+            var baseImage = new Image();
+            var brightness = document.getElementById('brightness');
+            var contrast = document.getElementById('contrast');
+            var saturate = document.getElementById('saturate');
+
+            baseImage.addEventListener('load', function(e) {
+                context.drawImage(this, 0, 0, context.canvas.width, context.canvas.width);
+            }, false);
+            baseImage.src = 'assets/sunflower.gif';
+
+            brightness.addEventListener('change', applyCanvasFilter);
+            contrast.addEventListener('change', applyCanvasFilter);
+            saturate.addEventListener('change', applyCanvasFilter);
+
+            function applyCanvasFilter(e) {
+                var property = e.target.id,
+                        amount = e.target.value;
+                context.canvas.setAttribute('style', 'filter:' + property + '(' + amount + '%); -webkit-filter:' + property + '(' + amount + '%); -moz-filter:' + property + '(' + amount + '%)');
+            }
+        </script>
+    </body>
+</html>
