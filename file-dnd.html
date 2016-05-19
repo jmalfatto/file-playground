@@ -76,16 +76,31 @@
                     alert('nope');
                     continue;
                 }
-                
-                var img = document.createElement("img");
-                img.classList.add("obj");
-                img.file = file;
-                preview.appendChild(img); // Assuming that "preview" is the div output where the content will be displayed.
-                
+
+                // use constructor to create new image object with css class
+                var img = new Image();
+                img.classList.add('obj');
+
+                /**
+                 * read file and, in the event that the file is loaded,
+                 * set image source, log info in console, and append image to dom
+                 */
                 var reader = new FileReader();
-                reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(img);
+                reader.onload = (function (imgEle) {
+                    return function (e) {
+                        imgEle.src = e.target.result;
+                        logImageInfo(file, imgEle);
+                        preview.appendChild(imgEle);
+                    };
+                })(img);
                 reader.readAsDataURL(file);
             }
+        }
+
+        function logImageInfo(file, imgEle) {
+            console.log('file name', file.name);
+            console.log('file size', Math.round(file.size/1000) + ' KB');
+            console.log('pixel dimensions', imgEle.naturalWidth + ' wide', imgEle.naturalHeight + ' high');
         }
     </script>
 </body>
