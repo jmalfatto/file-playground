@@ -1,7 +1,7 @@
 {
-  "name": "files",
+  "name": "image-file-playground",
   "version": "1.0.0",
-  "description": "Playground for file R&D",
+  "description": "Playground for image file R&D",
   "main": "proxy.js",
   "scripts": {
     "postinstall": "node postinstall.js",
