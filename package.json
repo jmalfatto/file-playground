@@ -2,7 +2,11 @@
   "name": "image-file-playground",
   "version": "1.0.0",
   "description": "Playground for image file R&D",
-  "main": "proxy.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmalfatto/image-file-playground"
+  },
+  "main": "server.js",
   "scripts": {
     "postinstall": "node postinstall.js",
     "start": "node server.js",

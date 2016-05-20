@@ -2,3 +2,4 @@ node_modules/
 uploads/
 socket.io/
 .idea/
+npm-debug.log

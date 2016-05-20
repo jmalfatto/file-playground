@@ -20,18 +20,18 @@ app.get('/*.*', function (req, res) {
 });
 
 app.post('/upload', function (req, res) {
-    let form = new formidable.IncomingForm();
+    var form = new formidable.IncomingForm();
     
     form.on('progress', function (bytesReceived, bytesExpected) {
-        let uploadStatus = 'bytesReceived: ' + bytesReceived + ', bytesExpected: ' + bytesExpected;
+        var uploadStatus = 'bytesReceived: ' + bytesReceived + ', bytesExpected: ' + bytesExpected;
         console.log(uploadStatus);
         io.emit('news', { bytesReceived, bytesExpected });
     });
     
     form.parse(req, function (err, fields, files) {
-        for (let key in files) {
+        for (var key in files) {
             fs.readFile(files[key].path, function (err, data) {
-                let newPath = uploadDir + files[key].name;
+                var newPath = uploadDir + files[key].name;
                 fs.outputFile(newPath, data, (err) => {
                     if (err) {
                         console.log(err);
