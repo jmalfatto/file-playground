@@ -29,7 +29,7 @@
     <canvas class="preview" width="500" height="500"></canvas>
     <div class="buttons">
         <button id="rotate" class="btn">Rotate</button>
-        <!--<button id="crop" class="btn">Crop</button> -->
+        <button id="crop" class="btn">Crop</button>
         <button id="restore" class="btn">Restore</button>
         <button id="output" class="btn">Output</button>
     </div>
@@ -43,42 +43,39 @@
             rotate = document.getElementById('rotate'),
             crop = document.getElementById('crop'),
             restore = document.getElementById('restore'),
-            output = document.getElementById('output');
+            output = document.getElementById('output'),
+            caman;
 
     baseImage.addEventListener('load', function (e) {
         context.drawImage(this, 0, 0, canvas.width, canvas.width);
+        caman = Caman(canvas, this);
     }, false);
     baseImage.src = 'assets/sunflower.jpg';
 
     rotate.addEventListener('click', rotateImage);
-    //rop.addEventListener('click', cropImage);
+    crop.addEventListener('click', cropImage);
     restore.addEventListener('click', restoreSettings);
     output.addEventListener('click', outputFile);
 
     function cropImage() {
-
+        caman.crop(200, 200, 100, 100);
+        caman.render();
     }
 
     function rotateImage() {
-        Caman(canvas, baseImage, function () {
-            this.rotate(90);
-            this.render();
-        });
+        caman.rotate(90);
+        caman.render();
     }
 
 
     function restoreSettings() {
-        Caman(canvas, baseImage, function () {
-            this.revert();
-            this.render();
-        });
+        caman.reset();
+        caman.render();
     }
 
     function outputFile() {
-        Caman(canvas, baseImage, function () {
-            this.render(function() {
-                let blob = this.canvas.toBlob(postBlob);
-            });
+        caman.render(function() {
+            let blob = this.canvas.toBlob(postBlob);
         });
     }
 
