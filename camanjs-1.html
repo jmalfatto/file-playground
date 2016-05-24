@@ -60,7 +60,8 @@
             <input class="slider" type="range" id="saturation" value="0" step="1" min="-100" max="100">
         </div>
         <div class="buttons">
-            <button id="restore" class="btn">Restore</button> <button id="output" class="btn">Output</button>
+            <button id="restore" class="btn">Restore</button>
+            <button id="upload" class="btn">Upload</button>
         </div>
     </div>
 </div>
@@ -74,7 +75,7 @@
             contrast = document.getElementById('contrast'),
             saturation = document.getElementById('saturation'),
             restore = document.getElementById('restore'),
-            output = document.getElementById('output');
+            upload = document.getElementById('upload');
 
     baseImage.addEventListener('load', function (e) {
         context.drawImage(this, 0, 0, canvas.width, canvas.width);
@@ -86,7 +87,7 @@
     saturation.addEventListener('change', applyCanvasFilter);
 
     restore.addEventListener('click', restoreSettings);
-    output.addEventListener('click', outputFile);
+    upload.addEventListener('click', uploadFile);
 
     function applyCanvasFilter(e) {
         let brightVal = parseInt(brightness.value),
@@ -110,7 +111,7 @@
         });
     }
 
-    function outputFile() {
+    function uploadFile() {
         Caman(canvas, baseImage, function () {
             this.render(function() {
                 let blob = this.canvas.toBlob(postBlob);
@@ -119,8 +120,6 @@
     }
 
     function postBlob(blob) {
-        console.log(blob);
-
         let formData = new FormData();
         formData.append('sunflower-image', blob, 'sunflower.jpg');
 
