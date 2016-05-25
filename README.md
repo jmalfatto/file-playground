@@ -5,7 +5,7 @@ basic html5 r&d for image files
 terminal commands:
 
 * `git clone https://github.com/jmalfatto/image-file-playground.git`
-* `cd file-playground`
+* `cd image-file-playground`
 * `npm install`
 * `npm start`
 
