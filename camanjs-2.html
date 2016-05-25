@@ -35,7 +35,7 @@
 <body>
 <div class="container">
     <div class="canvas-container">
-        <canvas class="preview" width="500" height="500"></canvas>
+        <canvas class="preview" width="500" height="500" data-caman-hidpi-disabled="true"></canvas>
     </div>
     <div class="buttons crop">
         <button id="confirm" class="btn">Confirm</button>
@@ -52,6 +52,24 @@
 <script type="text/javascript" src="node_modules/cropperjs/dist/cropper.js"></script>
 <script type="text/javascript">
     'use strict';
+
+    if (!HTMLCanvasElement.prototype.toBlob) {
+        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+
+                var binStr = atob( this.toDataURL(type, quality).split(',')[1] ),
+                        len = binStr.length,
+                        arr = new Uint8Array(len);
+
+                for (var i=0; i<len; i++ ) {
+                    arr[i] = binStr.charCodeAt(i);
+                }
+
+                callback( new Blob( [arr], {type: type || 'image/png'} ) );
+            }
+        });
+    }
+
     var canvas = document.querySelector('.preview'),
             context = canvas.getContext('2d'),
             baseImage = new Image(),
@@ -79,7 +97,7 @@
     cancelCrop.addEventListener('click', cancelImageCrop);
 
     function showCropBox() {
-        let canvas = document.querySelector('.preview'); // reselection avoids a bug when a canvas has already been edited
+        var canvas = document.querySelector('.preview'); // reselection avoids a bug when a canvas has already been edited
         cropper = new Cropper(canvas, {
             background: false,
             zoomable: false
@@ -104,7 +122,7 @@
     }
 
     function cropImage() {
-        let data = cropper.getCropBoxData();
+        var data = cropper.getCropBoxData();
         cropper.destroy();
         caman.crop(data.width, data.height, data.left, data.top);
         caman.render();
@@ -128,20 +146,22 @@
     }
 
     function uploadFile() {
-        caman.render(function() {
-            let blob = this.canvas.toBlob(postBlob);
+        caman.render(function () {
+            var blob = this.canvas.toBlob(postBlob);
         });
     }
 
     function postBlob(blob) {
-        let formData = new FormData();
+        var formData = new FormData();
         formData.append('sunflower-image', blob, 'sunflower.jpg');
 
-        let request = new XMLHttpRequest();
-        request.open('POST', 'http://localhost:3000/upload');
+        var request = new XMLHttpRequest();
+        var url = window.location.protocol + '//' + window.location.host + '/upload';
+
+        request.open('POST', url);
         request.send(formData);
 
-        request.onload = (e) => {
+        request.onload = function (e) {
             console.log('Request Status', request.status);
         };
     }

@@ -45,7 +45,7 @@
 </head>
 <body>
 <div class="container">
-    <canvas class="preview" width="500" height="500"></canvas>
+    <canvas class="preview" width="500" height="500" data-caman-hidpi-disabled="true"></canvas>
     <div class="controls">
         <div class="control">
             <label class="control-label">Brightness</label>
@@ -68,6 +68,24 @@
 <script type="text/javascript" src="caman/dist/caman.full.js"></script>
 <script type="text/javascript">
     'use strict';
+
+    if (!HTMLCanvasElement.prototype.toBlob) {
+        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+
+                var binStr = atob( this.toDataURL(type, quality).split(',')[1] ),
+                        len = binStr.length,
+                        arr = new Uint8Array(len);
+
+                for (var i=0; i<len; i++ ) {
+                    arr[i] = binStr.charCodeAt(i);
+                }
+
+                callback( new Blob( [arr], {type: type || 'image/png'} ) );
+            }
+        });
+    }
+
     var canvas = document.querySelector('.preview'),
             context = canvas.getContext('2d'),
             baseImage = new Image(),
@@ -75,10 +93,14 @@
             contrast = document.getElementById('contrast'),
             saturation = document.getElementById('saturation'),
             restore = document.getElementById('restore'),
-            upload = document.getElementById('upload');
+            upload = document.getElementById('upload'),
+            caman;
 
     baseImage.addEventListener('load', function (e) {
         context.drawImage(this, 0, 0, canvas.width, canvas.width);
+        setTimeout(function () {
+            caman = Caman(canvas, this);
+        }, 1000);
     }, false);
     baseImage.src = 'assets/sunflower.jpg';
 
@@ -90,44 +112,41 @@
     upload.addEventListener('click', uploadFile);
 
     function applyCanvasFilter(e) {
-        let brightVal = parseInt(brightness.value),
+        var brightVal = parseInt(brightness.value),
                 contrastVal = parseInt(contrast.value),
                 saturateVal = parseInt(saturation.value);
-        Caman(canvas, baseImage, function () {
-            this.revert(false);
-            this.brightness(brightVal);
-            this.contrast(contrastVal);
-            this.saturation(saturateVal);
-            this.render();
-        });
+        caman.revert(false);
+        caman.brightness(brightVal);
+        caman.contrast(contrastVal);
+        caman.saturation(saturateVal);
+        caman.render();
     }
 
     function restoreSettings() {
-        Caman(canvas, baseImage, function () {
-            this.revert();
-            brightness.value = 0;
-            contrast.value = 0;
-            saturation.value = 0;
-        });
+        caman.revert();
+        brightness.value = 0;
+        contrast.value = 0;
+        saturation.value = 0;
     }
 
     function uploadFile() {
-        Caman(canvas, baseImage, function () {
-            this.render(function() {
-                let blob = this.canvas.toBlob(postBlob);
-            });
+        var fileType = 'image/jpeg';
+        caman.render(function() {
+            var blob = caman.canvas.toBlob(postBlob);
         });
     }
 
     function postBlob(blob) {
-        let formData = new FormData();
+        var formData = new FormData();
         formData.append('sunflower-image', blob, 'sunflower.jpg');
 
-        let request = new XMLHttpRequest();
-        request.open('POST', 'http://localhost:3000/upload');
+        var request = new XMLHttpRequest();
+        var url = window.location.protocol + '//' + window.location.host + '/upload';
+
+        request.open('POST', url);
         request.send(formData);
 
-        request.onload = (e) => {
+        request.onload = function (e) {
             console.log('Request Status', request.status);
         };
     }
