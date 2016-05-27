@@ -11,6 +11,8 @@
         }
         .preview {
             margin: 0 auto;
+            width: 500px;
+            height: 500px;
         }
         .controls {
             display: inherit;
@@ -45,7 +47,7 @@
 </head>
 <body>
 <div class="container">
-    <canvas class="preview" width="500" height="500" data-caman-hidpi-disabled="true"></canvas>
+    <img src="assets/sunflower.jpg" class="preview" data-camanwidth="500" data-camanheight="500" data-caman-hidpi-disabled="true"></img>
     <div class="controls">
         <div class="control">
             <label class="control-label">Brightness</label>
@@ -86,9 +88,7 @@
         });
     }
 
-    var canvas = document.querySelector('.preview'),
-            context = canvas.getContext('2d'),
-            baseImage = new Image(),
+    var baseImage = document.querySelector('.preview'),
             brightness = document.getElementById('brightness'),
             contrast = document.getElementById('contrast'),
             saturation = document.getElementById('saturation'),
@@ -96,13 +96,9 @@
             upload = document.getElementById('upload'),
             caman;
 
-    baseImage.addEventListener('load', function (e) {
-        context.drawImage(this, 0, 0, canvas.width, canvas.width);
-        setTimeout(function () {
-            caman = Caman(canvas, this);
-        }, 1000);
-    }, false);
-    baseImage.src = 'assets/sunflower.jpg';
+    setTimeout(function () {
+        caman = Caman(baseImage);
+    }, 1000);
 
     brightness.addEventListener('change', applyCanvasFilter);
     contrast.addEventListener('change', applyCanvasFilter);

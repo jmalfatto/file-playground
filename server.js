@@ -39,7 +39,7 @@ app.post('/upload', function (req, res) {
         for (var i=0; i< this.openedFiles.length; i++) {
             var file = this.openedFiles[i];
             var newPath = uploadDir + file.name;
-            fs.copy(file.path, newPath + file.name, function (err) {
+            fs.copy(file.path, newPath, function (err) {
                 if (err) {
                     console.error(err);
                 } else {
