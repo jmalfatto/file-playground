@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Adjust Image Levels</title>
+    <link href="node_modules/cropperjs/dist/cropper.css" rel="stylesheet">
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .canvas-container {
+            width: 500px;
+            height: 500px;
+            margin-bottom: 1em;
+        }
+        .preview {
+            margin: 0 auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .buttons {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            margin: 0.5em 15%;
+        }
+        .btn {
+            width: 100px;
+            margin: 1em 0.5em;
+        }
+        .buttons.crop {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="canvas-container">
+        <img src="assets/sunflower.jpg" class="preview" data-caman-hidpi-disabled="true"></img>
+    </div>
+    <div class="buttons crop">
+        <button id="confirm" class="btn">Confirm</button>
+        <button id="cancel" class="btn">Cancel</button>
+    </div>
+    <div class="buttons">
+        <button id="rotate" class="btn">Rotate</button>
+        <button id="crop" class="btn">Crop</button>
+        <button id="restore" class="btn">Restore</button>
+        <button id="upload" class="btn">Upload</button>
+    </div>
+</div>
+<script type="text/javascript" src="caman/dist/caman.full.js"></script>
+<script type="text/javascript" src="node_modules/cropperjs/dist/cropper.js"></script>
+<script type="text/javascript">
+    'use strict';
+
+    if (!HTMLCanvasElement.prototype.toBlob) {
+        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+
+                var binStr = atob( this.toDataURL(type, quality).split(',')[1] ),
+                        len = binStr.length,
+                        arr = new Uint8Array(len);
+
+                for (var i=0; i<len; i++ ) {
+                    arr[i] = binStr.charCodeAt(i);
+                }
+
+                callback( new Blob( [arr], {type: type || 'image/png'} ) );
+            }
+        });
+    }
+
+    var baseImage = document.querySelector('.preview'),
+            rotate = document.getElementById('rotate'),
+            crop = document.getElementById('crop'),
+            restore = document.getElementById('restore'),
+            upload = document.getElementById('upload'),
+            cropButtons = document.querySelector('.buttons.crop'),
+            confirmCrop = document.getElementById('confirm'),
+            cancelCrop = document.getElementById('cancel'),
+            caman,
+            cropper;
+
+    setTimeout(function () {
+        caman = Caman(baseImage);
+    }, 1000);
+
+    rotate.addEventListener('click', rotateImage);
+    crop.addEventListener('click', showCropBox);
+    restore.addEventListener('click', restoreSettings);
+    upload.addEventListener('click', uploadFile);
+    confirmCrop.addEventListener('click', cropImage);
+    cancelCrop.addEventListener('click', cancelImageCrop);
+
+    function showCropBox() {
+        var canvas = document.querySelector('.preview'); // reselection avoids a bug when a canvas has already been edited
+        cropper = new Cropper(canvas, {
+            background: false,
+            zoomable: false
+        });
+        toggleCropButtons(true);
+    }
+
+    function toggleCropButtons(show) {
+        if (show) {
+            cropButtons.style.display = 'block';
+            rotate.disabled = true;
+            crop.disabled = true;
+            restore.disabled = true;
+            upload.disabled = true;
+            return;
+        }
+        cropButtons.style.display = 'none';
+        rotate.disabled = false;
+        crop.disabled = false;
+        restore.disabled = false;
+        upload.disabled = false;
+    }
+
+    function cropImage() {
+        var newCanvas = cropper.getCroppedCanvas();
+
+        newCanvas.classList.add('preview');
+        newCanvas.setAttribute('data-caman-hidpi-disabled', 'true');
+
+        cropper.destroy();
+
+        caman.replaceCanvas(newCanvas);
+
+        toggleCropButtons(false);
+    }
+
+    function cancelImageCrop() {
+        cropper.destroy();
+        toggleCropButtons(false);
+    }
+
+    function rotateImage() {
+        caman.rotate(90);
+        caman.render();
+    }
+
+
+    function restoreSettings() {
+        caman.reset();
+        caman.render();
+    }
+
+    function uploadFile() {
+        caman.render(function () {
+            var blob = this.canvas.toBlob(postBlob);
+        });
+    }
+
+    function postBlob(blob) {
+        var formData = new FormData();
+        formData.append('sunflower-image', blob, 'sunflower.jpg');
+
+        var request = new XMLHttpRequest();
+        var url = window.location.protocol + '//' + window.location.host + '/upload';
+
+        request.open('POST', url);
+        request.send(formData);
+
+        request.onload = function (e) {
+            console.log('Request Status', request.status);
+        };
+    }
+</script>
+</body>
+</html>
