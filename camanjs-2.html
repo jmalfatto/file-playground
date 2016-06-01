@@ -84,7 +84,7 @@
             cropper;
 
     baseImage.addEventListener('load', function (e) {
-        context.drawImage(this, 0, 0, canvas.width, canvas.width);
+        context.drawImage(this, 0, 0, canvas.width, canvas.height);
         caman = Caman(canvas, this);
     }, false);
     baseImage.src = 'assets/sunflower.jpg';
