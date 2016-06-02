@@ -39,21 +39,42 @@
 </div>
 
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="lekagcdtwqd2389"></script>
+<script type="text/javascript" src="node_modules/blob-util/dist/blob-util.js"></script>
 
 <script>
     preview = document.getElementById('preview');
 
-    var options = options = {
+    var extToMimes = {
+        'jpg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif'
+    };
+
+    var options = {
 
         // Required. Called when a user selects an item in the Chooser.
         success: function(files) {
-            console.log(files);
-            for(var i = 0; i < files.length; i++) {
-                var img = document.createElement('img');
+            var pendingUploads = [];
+            var i, file, url, ext, mimeType;
+            for(i = 0; i < files.length; i++) {
+                file = files[i], url = file.link;
+
+                // render on page
+                img = new Image();
                 img.classList.add('obj');
                 img.src = files[i].link;
                 preview.appendChild(img);
+
+                ext = file.name.split('.').pop();
+                mimeType = extToMimes[ext];
+
+                pendingUploads.push({
+                    name: file.name,
+                    mimeType: mimeType,
+                    url: url
+                });
             }
+            getBlobs(pendingUploads);
         },
 
         // Optional. Called when the user closes the dialog without selecting a file
@@ -65,11 +86,11 @@
         // Optional. "preview" (default) is a preview link to the document for sharing,
         // "direct" is an expiring link to download the contents of the file. For more
         // information about link types, see Link types below.
-        linkType: 'direct', // or "direct"
+        linkType: 'direct',
 
         // Optional. A value of false (default) limits selection to a single file, while
         // true enables multiple file selection.
-        multiselect: true, // or true
+        multiselect: true,
 
         // Optional. This is a list of file extensions. If specified, the user will
         // only be able to select files with these extensions. You may also specify
@@ -81,6 +102,20 @@
     // out-of-the-box version
     //var button = Dropbox.createChooseButton(options);
     //document.getElementById('container').appendChild(button);
+
+    function getBlobs(pendingUploads) {
+        pendingUploads.forEach(function (item, index) {
+                blobUtil.imgSrcToBlob(item.url, item.mimeType, 'Anonymous').then(function (blob) {
+                formData = new FormData();
+                formData.append('file' + index, blob, item.name);
+                request = new XMLHttpRequest();
+                request.open('POST', 'http://localhost:3000/upload');
+                request.send(formData);
+            }).catch(function (err) {
+                console.log(err);
+             });
+        });
+    }
 
     function openDropbox() {
         Dropbox.choose(options);

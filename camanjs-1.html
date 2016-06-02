@@ -128,13 +128,13 @@
     function uploadFile() {
         var fileType = 'image/jpeg';
         caman.render(function() {
-            var blob = caman.canvas.toBlob(postBlob);
+            var blob = caman.canvas.toBlob(postBlob, fileType);
         });
     }
 
     function postBlob(blob) {
         var formData = new FormData();
-        formData.append('sunflower-image', blob, 'sunflower.jpg');
+        formData.append('some-image', blob, 'some-image.jpg');
 
         var request = new XMLHttpRequest();
         var url = window.location.protocol + '//' + window.location.host + '/upload';
