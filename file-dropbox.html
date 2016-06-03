@@ -96,7 +96,7 @@
         // only be able to select files with these extensions. You may also specify
         // file types, such as "video" or "images" in the list. For more information,
         // see File types below. By default, all extensions are allowed.
-        extensions: ['.png', '.jpg', '.gif'],
+        extensions: ['.png', '.jpg', '.gif']
     };
 
     // out-of-the-box version
@@ -105,7 +105,7 @@
 
     function getBlobs(pendingUploads) {
         pendingUploads.forEach(function (item, index) {
-                blobUtil.imgSrcToBlob(item.url, item.mimeType, 'Anonymous').then(function (blob) {
+            blobUtil.imgSrcToBlob(item.url, item.mimeType, 'Anonymous').then(function (blob) {
                 formData = new FormData();
                 formData.append('file' + index, blob, item.name);
                 request = new XMLHttpRequest();

@@ -25,7 +25,8 @@ function processForm(e) {
     }
 
     var request = new XMLHttpRequest();
-    request.open('POST', 'http://localhost:3000/upload');
+    var url = window.location.protocol + '//' + window.location.host + '/upload';
+    request.open('POST', url);
     request.send(formData);
     
     request.onload = function(e) {
