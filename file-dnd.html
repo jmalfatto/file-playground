@@ -70,12 +70,6 @@
         function handleFiles(files) {
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
-                var imageType = /^image\//;
-                
-                if (!imageType.test(file.type)) {
-                    alert('nope');
-                    continue;
-                }
 
                 // use constructor to create new image object with css class
                 var img = new Image();
