@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Submitting form-data parts with multiple types</title>
+
+    <style>
+        .metadata {
+            width: 200px;
+            height: 50px;
+        }
+    </style>
+</head>
+
+<body>
+
+<form id="testForm">
+    <textarea class="metadata" name="metadata">{"title":"some random image", "desc":"my multipart post", "filename":"4.png"}</textarea><br>
+    <input type="number" name="degrees" value="90"><br>
+    <input type="file" name="data"><br>
+    <input type="submit">
+</form>
+
+<script>
+
+    document.forms[0].addEventListener('submit', processForm);
+
+    function processForm(e) {
+        e.preventDefault();
+
+        var formData = new FormData();
+
+        var metadataBlob = new Blob([this.metadata.value], {type: 'application/json'}); // this sets the file type, but uploads as a file, not as a field
+        var metadataString = this.metadata.value; // this uploads as a string and cannot be declared as a different content-type
+        var degrees = this.degrees.value;
+        var data = this.data.files[0];
+
+        formData.append('metadata', metadataBlob);
+        formData.append('degrees', degrees);
+        formData.append('data', data);
+
+        var request = new XMLHttpRequest();
+        var url = window.location.protocol + '//' + window.location.host + '/upload';
+        request.open('POST', url);
+        request.send(formData);
+
+        request.onload = function(e) {
+            console.log('Request Status', request.status);
+        };
+    }
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Converter</title>
+</head>
+<body>
+
+<form id="testForm">
+    <input type="file" id="file"><br/>
+    <input type="submit">
+</form>
+
+<script>
+
+    document.forms[0].addEventListener('submit', processForm);
+
+    var fileSizes = {
+        name: '',
+        original: 0,
+        output: 0,
+        diff: 0,
+        percent: 0,
+        reduction: 0
+    };
+
+    function processForm(e) {
+        e.preventDefault();
+
+        console.time('processForm');
+
+        if (this.file.files.length === 0) {
+            return;
+        }
+
+        var img = new Image();
+        var file = this.file.files[0];
+
+        fileSizes.original = file.size;
+        fileSizes.name = file.name;
+
+        var reader = new FileReader();
+        reader.onload = (function (imgEle) {
+            return function (e) {
+                imgEle.onload = function () {
+                    compressImage(this);
+                }
+                imgEle.src = e.target.result;
+            };
+        })(img);
+        reader.readAsDataURL(file);
+    }
+
+    function compressImage(sourceImg) {
+        var cvs = document.createElement('canvas');
+        cvs.width = sourceImg.naturalWidth;
+        cvs.height = sourceImg.naturalHeight;
+        var ctx = cvs.getContext('2d').drawImage(sourceImg, 0, 0);
+        var toBlob = cvs.toBlob(function (blob) {
+            fileSizes.output = blob.size;
+            fileSizes.diff = fileSizes.original - fileSizes.output;
+            fileSizes.percent = parseInt(fileSizes.output / fileSizes.original * 100);
+            fileSizes.reduction = fileSizes.diff > 0 ? 100 - fileSizes.percent : 0;
+            fileSizes.growth = fileSizes.diff < 0 ? fileSizes.percent / 100 : 0;
+            console.timeEnd('processForm');
+            console.log(fileSizes);
+            uploadBlob(blob);
+        }, 'image/jpeg', 0.5);
+    }
+
+    function uploadBlob(blob) {
+        var formData = new FormData();
+        var request = new XMLHttpRequest();
+        var url = window.location.protocol + '//' + window.location.host + '/upload';
+
+        formData.append('fileOutput', blob, 'test.jpg');
+        request.open('POST', url);
+        request.send(formData);
+
+        request.onload = function(e) {
+            console.log('Request Status', request.status);
+        };
+    }
+
+    function constrainSize(img) {
+
+    }
+
+</script>
+
+</body>
+</html>
