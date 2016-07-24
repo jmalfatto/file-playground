@@ -4,7 +4,9 @@
 
 (function(global) {
 
-    console.clear();
+    if (!util.isSafari()) {
+        console.clear();
+    }
 
     if(typeof util === 'undefined') {
         throw new Error('missing util');
@@ -173,16 +175,17 @@
     function testIsCaretAtNodeStartStyle() {
         var expected = true;
         var childNode;
+        var startOffset = util.isSafari() ? 1 : 0;
 
         global.hightlightText();
 
         if (global.containerEl.childNodes.length > 1) {
             childNode = global.containerEl.childNodes[1];
-
-            util.setCaretPosition(childNode, 0);
         } else {
             childNode = global.containerEl.firstChild;
         }
+
+        util.setCaretPosition(childNode, startOffset);
 
         var actual = util.isCaretAtNodeStart();
 

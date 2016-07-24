@@ -109,21 +109,29 @@ contentEditableUtil = {
         var textNode;
         if (node.nodeName === '#text') {
             textNode = node;
-            node.parentNode.focus();
         } else if (node.hasChildNodes()) {
             textNode = this.getFirstNodeText(node, true);
-            node.focus();
         } else {
             return;
         }
+        node.parentNode.focus();
         var sel = window.getSelection();
-        sel.collapse(textNode, startOffset);
+        //sel.collapse(textNode, startOffset);
+        var range = document.createRange();
+        range.setStart(textNode, startOffset);
+        range.setEnd(textNode, startOffset);
+        sel.removeAllRanges();
+        sel.addRange(range);
     },
 
     isCaretAtNodeStart: function () {
         var range = this.getSelectedRange();
         if (range) {
-            return range.startOffset === 0;
+            // there's a bug in safari that causes it to struggle to retain ranges with 0 startOffsets in highlight node
+            // e.g. shifts the startContainer to the previous node with its endOffset as startOffset
+            // or else loses it completely
+            // incrementing the startOffset by 1 corrects the startContainer
+            return range.startOffset === (this.isSafari() && this.isRangeWithinHighlight(range) ? 1 : 0);
         }
         return false;
     },
@@ -140,9 +148,9 @@ contentEditableUtil = {
         return node === node.parentNode.lastChild;
     },
 
-    isRangeWithinHighlight: function () {
+    isRangeWithinHighlight: function (range) {
         var tagRegex = /^(span|font|b|strong)$/;
-        var range = this.getSelectedRange();
+        range = range || this.getSelectedRange();
         if (range) {
             var parentNodeName = range.startContainer.parentNode.nodeName.toLowerCase();
             return tagRegex.test(parentNodeName);
@@ -183,6 +191,10 @@ contentEditableUtil = {
             node.removeChild(node.firstChild);
         }
         return node;
+    },
+
+    isSafari: function () {
+        return navigator.vendor && navigator.vendor.toLowerCase().indexOf('apple') > -1;
     }
 
 };
