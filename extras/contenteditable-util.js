@@ -31,7 +31,28 @@ contentEditableUtil = {
         var textNode = document.createTextNode(node.textContent);
 
         container.replaceChild(textNode, node); // replace node with just text node
-        container.normalize(); // joins adjacent text nodes that have been split by highlighting
+
+        // joins adjacent text nodes that have been split by highlighting
+        // detect IE11 and use custom function in that case
+        if ('ActiveXObject' in window) {
+            var node = container.firstChild, next, text;
+            while (node) {
+                next = node.nextSibling
+                if (node.nodeType === 3) {
+                    if (text) {
+                        text.nodeValue += node.nodeValue;
+                        container.removeChild(node);
+                    } else {
+                        text = node;
+                    }
+                } else {
+                    text = null
+                }
+                node = next;
+            }
+        } else {
+            container.normalize();
+        }
     },
 
     getRangeWord: function () {
