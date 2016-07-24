@@ -1,16 +1,5 @@
 contentEditableUtil = {
 
-    isRangeWithinStyleNode: function () {
-        var tagRegex = /^(span|font|b|strong)$/;
-        var sel = window.getSelection();
-        if (sel.rangeCount) {
-            var range = sel.getRangeAt(0);
-            var parentNodeName = range.startContainer.parentNode.nodeName.toLowerCase();
-            return tagRegex.test(parentNodeName);
-        }
-        return false;
-    },
-
     isRangeWordProhibited: function (prohibited) {
         var word = this.getRangeWord();
 
@@ -21,10 +10,33 @@ contentEditableUtil = {
         return prohibited.indexOf(word) > -1 ? true : false;
     },
 
-    getRangeWord: function () {
+    highlightRange: function (node, startOffset, endOffset) {
+        var range = document.createRange();
         var sel = window.getSelection();
-        if (sel.rangeCount) {
-            var range = sel.getRangeAt(0);
+
+        range.setStart(node, startOffset);
+        range.setEnd(node, endOffset);
+
+        sel.removeAllRanges(); // to avoid discontiguous selection error
+        sel.addRange(range);
+
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand('bold', false);
+        document.execCommand('foreColor', false, 'red');
+
+        sel.removeAllRanges(); // This prevents default select highlight and prevents bold toggle.
+    },
+
+    removeHighlight: function (container, node) {
+        var textNode = document.createTextNode(node.textContent);
+
+        container.replaceChild(textNode, node); // replace node with just text node
+        container.normalize(); // joins adjacent text nodes that have been split by highlighting
+    },
+
+    getRangeWord: function () {
+        var range = this.getSelectedRange();
+        if (range) {
             var isCaret = range.startOffset === range.endOffset;
             var text = range.startContainer.textContent;
 
@@ -62,6 +74,94 @@ contentEditableUtil = {
             return this.findWordBreak(text, index + 1, direction);
         }
         return -1;
+    },
+
+    getCaretPosition: function () {
+        var range = this.getSelectedRange();
+        if (range) {
+            return range.startOffset;
+        }
+        return -1;
+    },
+
+    setCaretPosition: function (node, startOffset) {
+        var textNode;
+        if (node.nodeName === '#text') {
+            textNode = node;
+            node.parentNode.focus();
+        } else if (node.hasChildNodes()) {
+            textNode = this.getFirstNodeText(node, true);
+            node.focus();
+        } else {
+            return;
+        }
+        var sel = window.getSelection();
+        sel.collapse(textNode, startOffset);
+    },
+
+    isCaretAtNodeStart: function () {
+        var range = this.getSelectedRange();
+        if (range) {
+            return range.startOffset === 0;
+        }
+        return false;
+    },
+
+    isCaretAtNodeEnd: function () {
+        var range = this.getSelectedRange();
+        if (range) {
+            return range.startContainer.length === range.endOffset;
+        }
+        return false;
+    },
+
+    isNodeLastChild: function (node) {
+        return node === node.parentNode.lastChild;
+    },
+
+    isRangeWithinHighlight: function () {
+        var tagRegex = /^(span|font|b|strong)$/;
+        var range = this.getSelectedRange();
+        if (range) {
+            var parentNodeName = range.startContainer.parentNode.nodeName.toLowerCase();
+            return tagRegex.test(parentNodeName);
+        }
+        return false;
+    },
+
+    getSelectedRange: function () {
+        var sel = window.getSelection();
+        if (sel.rangeCount) {
+            return range = sel.getRangeAt(0);
+        }
+    },
+
+    getFirstNodeText: function (node, returnNode) {
+        var i, text;
+        if (node.nodeName === '#text') {
+            return returnNode ? node : node.textContent;
+        } else {
+            for (i=0; i<node.childNodes.length; i++) {
+                text = getFirstNodeText(node.childNodes[i], returnNode);
+                if (text) {
+                    return text;
+                }
+            }
+        }
+    },
+
+    removeAllMarkup: function (node) {
+        var text = node.textContent;
+        var textNode = document.createTextNode(text);
+        this.removeAllChildNodes(node);
+        node.appendChild(textNode);
+    },
+
+    removeAllChildNodes: function (node) {
+        while (node.firstChild) {
+            node.removeChild(node.firstChild);
+        }
+        return node;
     }
 
 };

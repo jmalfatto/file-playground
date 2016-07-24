@@ -149,7 +149,7 @@
             }
             absolutePosition = len + startOffset;
         }
-        console.log(absolutePosition);
+        //console.log(absolutePosition);
     }
 
     function restoreCursor() {
@@ -169,18 +169,11 @@
                 len += textNode.textContent.length;
                 if (absolutePosition <= len) {
                     startOffset = absolutePosition - prevLen;
-                    setCursorPosition(textNode, startOffset);
+                    util.setCaretPosition(textNode, startOffset);
                     break;
                 }
             }
         }
-    }
-
-    function setCursorPosition(node, startOffset) {
-        containerEl.focus();
-        var sel = window.getSelection();
-        var node = node || containerEl.firstChild;
-        sel.collapse(node, startOffset);
     }
 
     function getFirstNodeText(node, returnNode) {
@@ -217,7 +210,7 @@
             textNode = document.createTextNode(selectedNode.textContent);
             selectedNode.parentNode.replaceChild(textNode, selectedNode);
             // still need to set the cursor in the proper position, else the new key will drop in front
-            setCursorPosition(textNode, startOffset);
+            util.setCaretPosition(textNode, startOffset);
             // some browsers nest elements (e.g. font/b or font/strong), so do it again
             removeHighlight();
         }
