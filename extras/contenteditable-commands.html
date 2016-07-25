@@ -6,8 +6,25 @@
 
     <style>
         #editdiv {
-            outline: 0px solid transparent;
+            border: 1px solid #cccccc;
+            padding: 3px;
+            width: 300px;
         }
+
+        #main {
+            display: flex;
+            flex-direction: row;
+            margin-top: 1em;
+        }
+
+        #exclamation {
+            display: none;
+            width: 20px;
+            height: 20px;
+            margin-left: 3px;
+            padding: 3px;
+        }
+
         [contenteditable=true]:empty:before {
             content: attr(placeholder);
             display: block;
@@ -20,11 +37,15 @@
 
 <body>
 
-<input type="text" id="searchstr" value="red green blue"><br>
-<br>
-<div id="editdiv" contenteditable="true" placeholder="Type here...">thar be red in here</div>
-<br>
-<button onclick="hightlightText();">highlight listed words</button>
+<form>
+    <input type="text" id="searchstr" value="red green blue">
+</form>
+
+<section id="main">
+    <div id="editdiv" contenteditable="true" placeholder="Type here...">thar be red in here</div>
+    <img id="exclamation" src="https://cdn1.iconfinder.com/data/icons/web-interface-part-2/32/circle-exclamation-mark-512.png">
+</section>
+
 
 <script src="contenteditable-util.js"></script>
 <script>
@@ -36,8 +57,8 @@
     var containerEl = document.getElementById('editdiv');
 
     containerEl.addEventListener('keydown', onKeyDown, false);
-    containerEl.addEventListener('focus', onFocusChange, false);
-    containerEl.addEventListener('blur', onFocusChange, false);
+    containerEl.addEventListener('focus', onFocus, false);
+    containerEl.addEventListener('blur', onBlur, false);
 
     function onKeyDown(e) {
         var text = this.textContent.slice(0);
@@ -45,28 +66,44 @@
 
         // maxlength: allow backspace and arrow left and right keys
         // prevent hard returns, which introduces bugs
-        if ((len >= 50 && !isInertKeyCode(e.keyCode)) || e.keyCode === 13) {
+        if ((len >= 50 && !/^(8|37|39)$/.test(e.keyCode)) || e.keyCode === 13) {
             e.preventDefault();
         }
 
         // if space, left-arrow, or right-arrow, run check on prohibited words
         if (/^(32|37|39)$/.test(e.keyCode)) {
-            debounce(checkProhibitedWords, 250)();
+            debounce(highlightProhibitedWords, 250)();
         }
     }
 
-    function onFocusChange() {
-        debounce(checkProhibitedWords, 250)();
+    function onFocus() {
+        debounce(highlightProhibitedWords, 250)();
     }
 
-    function checkProhibitedWords() {
+    function onBlur() {
+        util.removeAllMarkup(containerEl);
+
+        var found = util.scanForProhibitedWords(containerEl, prohibitedWords);
+
+        toggleExclamation(found);
+    }
+
+    function highlightProhibitedWords() {
         var prohibited = searchstrEl.value.split(' ');
 
         util.saveCaret(containerEl);
 
-        util.highlightAllProhibitedWords(containerEl, prohibited);
+        var found = util.highlightAllProhibitedWords(containerEl, prohibited);
 
         util.restoreCaret(containerEl);
+
+        toggleExclamation(found);
+    }
+
+    function toggleExclamation(on) {
+        var icon = document.getElementById('exclamation');
+
+        icon.style.display = on ? 'flex' : 'none';
     }
 
     function debounce(func, wait, immediate) {

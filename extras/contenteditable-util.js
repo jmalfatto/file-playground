@@ -11,6 +11,8 @@ contentEditableUtil = {
     },
 
     highlightAllProhibitedWords: function (node, prohibited) {
+        var found = false;
+
         if (!node || typeof node.textContent === 'undefined') {
             return;
         }
@@ -33,6 +35,7 @@ contentEditableUtil = {
                     str = childNode.nodeValue;
 
                     if (re.test(str)) {
+                        found = true;
                         startOffset = str.indexOf(word);
                         endOffset = startOffset + word.length,
                         range = document.createRange();
@@ -42,6 +45,36 @@ contentEditableUtil = {
             }
         });
 
+        return found;
+    },
+
+    scanForProhibitedWords: function (node, prohibited) {
+        var found = false;
+
+        if (!node || typeof node.textContent === 'undefined') {
+            return;
+        }
+
+        var me = this;
+
+        prohibited.forEach(function (word) {
+            var i = 0, childNode, re, str;
+
+            for(i; i<node.childNodes.length; i++) {
+                childNode = node.childNodes[i];
+                if (childNode.nodeName === '#text') {
+                    // only work with whole words
+                    re = new RegExp('\\b' + word + '\\b', 'g');
+                    str = childNode.nodeValue;
+
+                    if (re.test(str)) {
+                        found = true;
+                    }
+                }
+            }
+        });
+
+        return found;
     },
 
     saveCaret: function (container) {
