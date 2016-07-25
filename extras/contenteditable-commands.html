@@ -28,6 +28,8 @@
 
 <script src="contenteditable-util.js"></script>
 <script>
+    var prohibitedWords = ['red', 'blue', 'green'];
+
     var util = contentEditableUtil;
 
     var searchstrEl = document.getElementById('searchstr');
@@ -39,6 +41,11 @@
     //containerEl.addEventListener('keydown', onKeyUp, false);
     //containerEl.addEventListener('click', isCursorWithinHighlightableWord, false);
     //containerEl.addEventListener('blur', hightlightText, false);
+    /*document.addEventListener('selectionchange', function (e) {
+       if(e.target.activeElement === containerEl) {
+           console.log(e);
+       }
+    }, false);*/
 
     setTimeout(function () {
         containerEl.focus();
@@ -51,6 +58,19 @@
         // prevent hard returns, which introduces bugs
         if ((len >= 50 && !isInertKeyCode(e.keyCode)) || e.keyCode === 13) {
             e.preventDefault();
+        }
+
+        // if space, check previous word in node for prohibited status
+        if (e.keyCode === 32) {
+            var doWordMarkup = util.isRangeWordProhibited(prohibitedWords);
+            var word = util.getRangeWord();
+            console.log('is prohibited', doWordMarkup, word);
+            if (doWordMarkup) {
+                saveCursor();
+                var range = util.getSelectedRange();
+                util.highlightRange(range.startContainer, word.startOffset, word.endOffset);
+                restoreCursor();
+            }
         }
     }
 

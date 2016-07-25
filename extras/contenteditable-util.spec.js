@@ -254,13 +254,17 @@
     }
 
     function testGetRangeWord() {
-        var expected = 'thar';
+        var expected = {
+            text: 'thar',
+            startOffset: 0,
+            endOffset: 4
+        };
 
         util.setCaretPosition(global.containerEl.firstChild, 0);
 
         var actual = util.getRangeWord();
 
-        expect(actual === expected, expected);
+        expect(JSON.stringify(actual) === JSON.stringify(expected), expected, 'actual and expected objects do not match');
     }
 
     function testGetRangeWordRange() {

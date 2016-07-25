@@ -1,7 +1,7 @@
 contentEditableUtil = {
 
     isRangeWordProhibited: function (prohibited) {
-        var word = this.getRangeWord();
+        var word = this.getRangeWord().text;
 
         if (!Array.isArray(prohibited)) {
             return false;
@@ -20,9 +20,12 @@ contentEditableUtil = {
         sel.removeAllRanges(); // to avoid discontiguous selection error
         sel.addRange(range);
 
-        document.execCommand('styleWithCSS', false, true);
-        document.execCommand('bold', false);
-        document.execCommand('foreColor', false, 'red');
+        // avoid repeats, which will toggle the bold style
+        if (!this.isRangeWithinHighlight(range)) {
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand('bold', false);
+            document.execCommand('foreColor', false, 'red');
+        }
 
         sel.removeAllRanges(); // This prevents default select highlight and prevents bold toggle.
     },
@@ -54,7 +57,7 @@ contentEditableUtil = {
             container.normalize();
         }
     },
-
+    
     getRangeWord: function () {
         var range = this.getSelectedRange();
         if (range) {
@@ -66,7 +69,11 @@ contentEditableUtil = {
             } else {
                 var leftBarrier = this.findWordBreak(text, range.startOffset, 'l');
                 var rightBarrier = this.findWordBreak(text, range.startOffset, 'r');
-                return text.substring(leftBarrier, rightBarrier);
+                return {
+                    text: text.substring(leftBarrier, rightBarrier),
+                    startOffset: leftBarrier,
+                    endOffset: rightBarrier
+                };
             }
         }
     },
