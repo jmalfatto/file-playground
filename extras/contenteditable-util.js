@@ -58,10 +58,10 @@ contentEditableUtil = {
         this.lastCaretPosition = -1;
         nodeList = Array.prototype.slice.call(containerEl.childNodes);
         if (parentNode === containerEl && nodeList.length === 1) {
-            startOffset = getStartOffset();
+            startOffset = this.getStartOffset();
             this.lastCaretPosition = startOffset;
         } else {
-            childIndex = getChildNodeIndex(parentNode),
+            childIndex = this.getChildNodeIndex(container, parentNode),
                 startOffset = this.getStartOffset();
             if (childIndex === -1) {
                 parentNode = this.getSelectedNode();
@@ -331,7 +331,7 @@ contentEditableUtil = {
             return returnNode ? node : node.textContent;
         } else {
             for (i=0; i<node.childNodes.length; i++) {
-                text = getFirstNodeText(node.childNodes[i], returnNode);
+                text = this.getFirstNodeText(node.childNodes[i], returnNode);
                 if (text) {
                     return text;
                 }

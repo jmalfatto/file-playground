@@ -98,7 +98,7 @@
 
         global.containerEl.textContent = 'thar be red in here';
 
-        global.hightlightText();
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
 
         var childNode = global.containerEl.childNodes[1];
 
@@ -156,7 +156,7 @@
         var expected = false;
         var childNode;
 
-        global.hightlightText();
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
 
         // in case the text is manually removed
         if (global.containerEl.childNodes.length === 1) {
@@ -186,7 +186,7 @@
         var expected = true;
         var childNode;
 
-        global.hightlightText();
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
 
         if (global.containerEl.childNodes.length > 1) {
             childNode = global.containerEl.childNodes[1];
@@ -220,7 +220,7 @@
         var childNode;
         var startOffset = util.isSafari() ? 1 : 0;
 
-        global.hightlightText();
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
 
         if (global.containerEl.childNodes.length > 1) {
             childNode = global.containerEl.childNodes[1];
@@ -256,7 +256,7 @@
         if (global.containerEl.textContent.length === 0) {
             expected = false;
         } else {
-            global.hightlightText();
+            util.highlightAllProhibitedWords(global.containerEl, prohibited);
 
             if (global.containerEl.childNodes.length > 1) {
                 childNode = global.containerEl.childNodes[1];
