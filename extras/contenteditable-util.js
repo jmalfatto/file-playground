@@ -1,5 +1,15 @@
 contentEditableUtil = {
 
+    get lastCaretPosition() {
+        return this._lastCaretPosition;
+    },
+
+    set lastCaretPosition(position) {
+        if (position) {
+            this._lastCaretPosition = position;
+        }
+    },
+
     highlightAllProhibitedWords: function (node, prohibited) {
         if (!node || typeof node.textContent === 'undefined') {
             return;
@@ -30,6 +40,61 @@ contentEditableUtil = {
             }
         });
 
+    },
+
+    saveCaret: function (container) {
+        var parentNode = this.getSelectedNode(true),
+            startOffset,
+            childIndex,
+            nodeList,
+            text,
+            i,
+            len = 0;
+        if (!this.isOrContainedBy(container, parentNode)) {
+            return;
+        }
+        this.lastCaretPosition = -1;
+        nodeList = Array.prototype.slice.call(containerEl.childNodes);
+        if (parentNode === containerEl && nodeList.length === 1) {
+            startOffset = getStartOffset();
+            this.lastCaretPosition = startOffset;
+        } else {
+            childIndex = getChildNodeIndex(parentNode),
+                startOffset = this.getStartOffset();
+            if (childIndex === -1) {
+                parentNode = this.getSelectedNode();
+                childIndex = this.getChildNodeIndex(container, parentNode);
+            }
+            for(i=0; i<childIndex; i++) {
+                text = this.getFirstNodeText(nodeList[i]);
+                len += text.length;
+            }
+            this.lastCaretPosition = len + startOffset;
+        }
+    },
+
+    restoreCaret: function (container) {
+        var nodeList,
+            i,
+            childNode,
+            prevLen = 0,
+            len = 0,
+            startOffset,
+            textNode;
+        if (this.lastCaretPosition !== -1) {
+            nodeList = Array.prototype.slice.call(container.childNodes);
+            for(i=0; i<nodeList.length; i++) {
+                childNode = nodeList[i];
+                textNode = this.getFirstNodeText(childNode, true);
+                prevLen = len;
+                len += textNode.textContent.length;
+                if (this.lastCaretPosition <= len) {
+                    startOffset = this.lastCaretPosition - prevLen;
+                    this.setCaretPosition(textNode, startOffset);
+                    break;
+                }
+            }
+        }
     },
 
     isRangeWordProhibited: function (prohibited) {
@@ -197,11 +262,65 @@ contentEditableUtil = {
         return false;
     },
 
+    getStartOffset: function () {
+        var selection = window.getSelection(),
+            range;
+        if (selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
+            return range.startOffset;
+        }
+    },
+
     getSelectedRange: function () {
         var sel = window.getSelection();
         if (sel.rangeCount) {
             return range = sel.getRangeAt(0);
         }
+    },
+
+    getSelectedNode: function (parent) {
+        var selection = window.getSelection(),
+            range, container;
+        if (selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
+            container = parent ? range.startContainer.parentNode : range.startContainer;
+            return container;
+        }
+    },
+
+    getChildNodeIndex: function (container, node, level) {
+        var i, parent, nodeList, level = level || 0;
+        // limit to two levels
+        if (level > 2) {
+            return -1;
+        }
+        // traverse parentNode tree until you reach containerEl, then find child index
+        if (node === container) {
+            parent = node;
+        } else if (node.parentNode === container) {
+            parent = node.parentNode;
+        } else {
+            i = this.getChildNodeIndex(container, node.parentNode, level+1);
+            if (i != -1) {
+                return i;
+            }
+        }
+        if (parent) {
+            nodeList = Array.prototype.slice.call(parent.childNodes);
+            return nodeList.indexOf(node);
+        }
+        return -1;
+    },
+
+    isOrContainedBy: function (node, testNode) {
+        var isSame = node === testNode;
+        if (isSame) {
+            return true;
+        }
+        if (node.hasChildNodes()) {
+            return node.contains(testNode);
+        }
+        return false;
     },
 
     getFirstNodeText: function (node, returnNode) {

@@ -4,6 +4,8 @@
 
 (function(global) {
 
+    var prohibited = ['red', 'blue', 'green'];
+
     if (!util.isSafari()) {
         console.clear();
     }
@@ -30,6 +32,8 @@
     testHighlightTwoRanges();
     testRemoveHighlight();
     testHighlightAllProhibitedWords();
+    testSaveCaret();
+    testRestoreCaret();
 
     console.timeEnd('total');
     console.groupEnd();
@@ -50,10 +54,35 @@
     return 'tests complete';
 
     /**** tests ****/
-    
+
+    function testRestoreCaret() {
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
+
+        util.restoreCaret(global.containerEl);
+
+        var position = util.getCaretPosition();
+
+        expect(global.containerEl.childNodes.length === 3, 3);
+
+        expect(position === 1, 1);
+    }
+
+    function testSaveCaret() {
+        var expected = 12;
+
+        global.containerEl.textContent = 'thar be red in here';
+
+        util.setCaretPosition(global.containerEl.firstChild, 12);
+
+        util.saveCaret(global.containerEl);
+
+        var actual = util.lastCaretPosition;
+
+        expect(actual === expected, expected);
+    }
+
     function testHighlightAllProhibitedWords() {
         var expected = 8;
-        var prohibited = ['red', 'blue', 'green'];
 
         global.containerEl.textContent = 'thar be red and blue and green and more red';
 
@@ -249,7 +278,6 @@
 
     function testIsRangeWordProhibited() {
         var expected = true;
-        var prohibited = ['red', 'blue', 'green'];
         var childNode;
 
         util.removeAllMarkup(global.containerEl);
