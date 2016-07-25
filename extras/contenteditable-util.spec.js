@@ -235,7 +235,7 @@
         expect(actual === expected, expected);
     }
 
-    function testIsCaretAtNodeStartPlain() {
+        function testIsCaretAtNodeStartPlain() {
         var expected = true;
 
         util.removeAllMarkup(global.containerEl);

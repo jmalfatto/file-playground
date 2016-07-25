@@ -22,18 +22,20 @@ contentEditableUtil = {
         node.normalize();
 
         prohibited.forEach(function (word) {
-            var i = 0, childNode, str,
+            var i = 0, childNode, re, str,
                 startOffset, endOffset, range;
 
             for(i; i<node.childNodes.length; i++) {
                 childNode = node.childNodes[i];
                 if (childNode.nodeName === '#text') {
-                    str = childNode.nodeValue,
-                        startOffset = str.indexOf(word),
+                    // only work with whole words
+                    re = new RegExp('\\b' + word + '\\b', 'g');
+                    str = childNode.nodeValue;
+
+                    if (re.test(str)) {
+                        startOffset = str.indexOf(word);
                         endOffset = startOffset + word.length,
                         range = document.createRange();
-
-                    if (startOffset > -1) {
                         me.highlightRange(childNode, startOffset, endOffset);
                     }
                 }
