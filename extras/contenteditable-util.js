@@ -1,5 +1,37 @@
 contentEditableUtil = {
 
+    highlightAllProhibitedWords: function (node, prohibited) {
+        if (!node || typeof node.textContent === 'undefined') {
+            return;
+        }
+
+        var me = this;
+
+        // start fresh and normalize in case text is split up into different nodes
+        me.removeAllMarkup(node);
+        node.normalize();
+
+        prohibited.forEach(function (word) {
+            var i = 0, childNode, str,
+                startOffset, endOffset, range;
+
+            for(i; i<node.childNodes.length; i++) {
+                childNode = node.childNodes[i];
+                if (childNode.nodeName === '#text') {
+                    str = childNode.nodeValue,
+                        startOffset = str.indexOf(word),
+                        endOffset = startOffset + word.length,
+                        range = document.createRange();
+
+                    if (startOffset > -1) {
+                        me.highlightRange(childNode, startOffset, endOffset);
+                    }
+                }
+            }
+        });
+
+    },
+
     isRangeWordProhibited: function (prohibited) {
         var word = this.getRangeWord().text;
 

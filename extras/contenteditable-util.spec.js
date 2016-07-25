@@ -29,6 +29,7 @@
     testHighlightRange();
     testHighlightTwoRanges();
     testRemoveHighlight();
+    testHighlightAllProhibitedWords();
 
     console.timeEnd('total');
     console.groupEnd();
@@ -49,6 +50,19 @@
     return 'tests complete';
 
     /**** tests ****/
+    
+    function testHighlightAllProhibitedWords() {
+        var expected = 8;
+        var prohibited = ['red', 'blue', 'green'];
+
+        global.containerEl.textContent = 'thar be red and blue and green and more red';
+
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
+
+        var actual = global.containerEl.childNodes.length;
+
+        expect(actual === expected, expected);
+    }
 
     function testRemoveHighlight() {
         var expected = 1;
