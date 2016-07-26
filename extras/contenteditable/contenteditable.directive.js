@@ -7,7 +7,7 @@ angular.module('contentEditableDemo.directives', [])
 function contentEditable() {
     return {
         restrict: 'A',
-        require: '?^ngModel',
+        require: '?ngModel',
         link: function (scope, element, attrs, ngModel) {
             var $ctrl = scope.$ctrl;
 
@@ -18,7 +18,23 @@ function contentEditable() {
                 element.html(ngModel.$viewValue || '');
             };
 
-            element.on('keydown', function(e) {
+            element.on('focus', function () {
+                debounce(highlightProhibitedWords, 250)();
+            });
+
+            element.on('blur', function () {
+                var containerEl = element[0];
+
+                $ctrl.util.removeAllMarkup(containerEl);
+
+                var found = $ctrl.util.scanForProhibitedWords(containerEl, $ctrl.prohibitedWords);
+
+                ngModel.$setValidity('myWidget', !found);
+
+                scope.$evalAsync(read);
+            });
+
+            element.on('keydown', function (e) {
                 var text = this.textContent.slice(0);
                 var len = text.replace(/[\n\r]+/g, '').length;
 
@@ -66,6 +82,8 @@ function contentEditable() {
                 $ctrl.util.saveCaret(containerEl);
 
                 var found = $ctrl.util.highlightAllProhibitedWords(containerEl, $ctrl.prohibitedWords);
+
+                ngModel.$setValidity('myWidget', !found);
 
                 $ctrl.util.restoreCaret(containerEl);
 

@@ -11,6 +11,11 @@
     margin-bottom: 12px;
 }
 
+.edit-div.ng-invalid {
+    outline: none;
+    box-shadow: 0px 0px 6px red;
+}
+
 [contenteditable]:empty:before {
     content: attr(placeholder);
     display: block;
