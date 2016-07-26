@@ -1,33 +1,43 @@
+// This directive is derived from the angular api reference here:
+// https://docs.angularjs.org/api/ng/type/ngModel.NgModelController
+
 angular.module('contentEditableDemo.directives', [])
     .directive('contenteditable', contentEditable);
 
 function contentEditable($sce) {
     return {
-        restrict: 'A', // only activate on element attribute
-        require: '?ngModel', // get a hold of NgModelController
+        restrict: 'A',
+        require: '?^ngModel',
         link: function (scope, element, attrs, ngModel) {
-            if (!ngModel) return; // do nothing if no ng-model
+            var $ctrl = scope.$ctrl;
 
-            // Specify how UI should be updated
+            if (!ngModel) return;
+
+            // specify how UI should be updated
             ngModel.$render = function() {
                 element.html($sce.getTrustedHtml(ngModel.$viewValue || ''));
             };
 
-            // Listen for change events to enable binding
+            // listen for change events to enable binding
             element.on('blur keyup change', function() {
                 scope.$evalAsync(read);
             });
+
             read(); // initialize
 
-            // Write data to the model
+            // write data to the model
             function read() {
                 var html = element.html();
-                // When we clear the content editable the browser leaves a <br> behind
-                // If strip-br attribute is provided then we strip this out
-                if ( attrs.stripBr && html == '<br>' ) {
-                    html = '';
+
+                // initialize if parent scope already has value
+                // this ensures that a value is rendered on the initial load event
+                if (!$ctrl.initialized) {
+                    html = html === '' && $ctrl.userContent.length > 0 ? $ctrl.userContent : html;
+                    $ctrl.initialized = true;
                 }
+
                 ngModel.$setViewValue(html);
+                ngModel.$render();
             }
         }
     };

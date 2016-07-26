@@ -1,13 +1,11 @@
-<form name="myForm">
+<form class="edit-form">
 
-    <div id="editdiv"
+    <div class="edit-div"
          placeholder="Type here..."
-         contenteditable="true"
-         name="myWidget" ng-model="userContent"
-         strip-br="true">thar be red in here</div>
+         contenteditable
+         name="myWidget"
+         ng-model="$ctrl.userContent"></div>
 
-    <hr>
-
-    <textarea ng-model="userContent" aria-label="Dynamic textarea"></textarea>
+    <textarea ng-model="$ctrl.userContent" aria-label="Dynamic textarea"></textarea>
 
 </form>

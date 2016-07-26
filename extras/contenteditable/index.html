@@ -3,21 +3,7 @@
 <head>
     <title>angularized contenteditable div</title>
 
-    <style>
-        #editdiv {
-            border: 1px solid #cccccc;
-            padding: 3px;
-            width: 300px;
-        }
-
-        [contenteditable=true]:empty:before {
-            content: attr(placeholder);
-            display: block;
-            font-family: sans-serif;
-            font-size: 12px;
-            color: gray;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -30,7 +16,7 @@
     <script src="contenteditable.util.js"></script>
     <script src="contenteditable.directive.js"></script>
     <script src="editbox.component.js"></script>
-    <script src="contenteditable.script.js"></script>
+    <script src="app.js"></script>
 
 </body>
 </html>
