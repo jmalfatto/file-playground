@@ -1,4 +1,4 @@
-contentEditableUtil = {
+var contentEditableUtil = {
 
     get lastCaretPosition() {
         return this._lastCaretPosition;
@@ -89,8 +89,8 @@ contentEditableUtil = {
             return;
         }
         this.lastCaretPosition = -1;
-        nodeList = Array.prototype.slice.call(containerEl.childNodes);
-        if (parentNode === containerEl && nodeList.length === 1) {
+        nodeList = Array.prototype.slice.call(container.childNodes);
+        if (parentNode === container && nodeList.length === 1) {
             startOffset = this.getStartOffset();
             this.lastCaretPosition = startOffset;
         } else {
@@ -329,7 +329,7 @@ contentEditableUtil = {
         if (level > 2) {
             return -1;
         }
-        // traverse parentNode tree until you reach containerEl, then find child index
+        // traverse parentNode tree until you reach container, then find child index
         if (node === container) {
             parent = node;
         } else if (node.parentNode === container) {

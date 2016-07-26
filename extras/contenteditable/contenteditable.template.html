@@ -6,6 +6,8 @@
          name="myWidget"
          ng-model="$ctrl.userContent"></div>
 
-    <textarea ng-model="$ctrl.userContent" aria-label="Dynamic textarea"></textarea>
+    <textarea class="html-dump" ng-model="$ctrl.userContent"></textarea>
+
+    <p>{{$ctrl.text.length || 0}}/50</p>
 
 </form>

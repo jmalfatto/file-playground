@@ -8,7 +8,7 @@
     border: 1px solid #cccccc;
     padding: 3px;
     width: 300px;
-    margin-bottom: 4px;
+    margin-bottom: 12px;
 }
 
 [contenteditable]:empty:before {
@@ -17,4 +17,9 @@
     font-family: sans-serif;
     font-size: 12px;
     color: gray;
+}
+
+.html-dump {
+    width: 300px;
+    height: 50px;
 }
