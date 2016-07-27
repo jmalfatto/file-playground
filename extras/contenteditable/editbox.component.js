@@ -4,7 +4,7 @@ angular.module('contentEditableDemo.components', [])
         controller: contentEditableController
     });
 
-function contentEditableController($scope, $element) {
+function contentEditableController() {
 
     this.initialized = false;
     this.userContent = 'thar be red in here';
@@ -13,5 +13,3 @@ function contentEditableController($scope, $element) {
     this.util = contentEditableUtil;
 
 }
-
-contentEditableController.$inject = ['$scope', '$element'];
