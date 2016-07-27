@@ -10,6 +10,113 @@ var contentEditableUtil = {
         }
     },
 
+    get lastAbsoluteRange() {
+        return this._lastAbsoluteRange;
+    },
+
+    set lastAbsoluteRange(absoluteRange) {
+        if (absoluteRange) {
+            this._lastAbsoluteRange = absoluteRange;
+        }
+    },
+
+    restoreAbsoluteRange: function (container) {
+        if (!this.lastAbsoluteRange || typeof this.lastAbsoluteRange.startOffset === 'undefined'
+            || typeof this.lastAbsoluteRange.endOffset === 'undefined') {
+            return;
+        }
+
+        var start = this.getRelativeOffsetFromAbsoluteOffset(container, this.lastAbsoluteRange.startOffset);
+        var end = this.getRelativeOffsetFromAbsoluteOffset(container, this.lastAbsoluteRange.endOffset);
+
+        if (!start || !end) {
+            return;
+        }
+
+        this.setRange(start.node, start.offset, end.node, end.offset);
+    },
+
+    saveAbsoluteRange: function (container) {
+        this.lastAbsoluteRange = this.getAbsoluteRange(container);
+    },
+
+    getAbsoluteRange: function (container) {
+        var selectedRange = this.getSelectedRange();
+
+        if (!selectedRange) {
+            return;
+        }
+
+        var absoluteStart = this.getAbsoluteOffset(container, selectedRange.startContainer, selectedRange.startOffset);
+        var absoluteEnd = this.getAbsoluteOffset(container, selectedRange.endContainer, selectedRange.endOffset);
+
+        return {
+            startOffset: absoluteStart,
+            endOffset: absoluteEnd
+        };
+    },
+
+    getRelativeOffsetFromAbsoluteOffset: function (container, absoluteOffset) {
+        var nodeList = Array.prototype.slice.call(container.childNodes);
+        var i = 0, text, len = 0, prevLen = 0;
+
+        for (i; i<nodeList.length; i++) {
+            text = this.getFirstNodeText(nodeList[i], true);
+            prevLen = len;
+            len += text.length;
+            if (absoluteOffset <= len) {
+                return {
+                    node: text,
+                    offset: absoluteOffset - prevLen
+                };
+            }
+        }
+    },
+
+    getAbsoluteOffset: function (container, node, offset) {
+        var nodeList = Array.prototype.slice.call(container.childNodes);
+        var i, text, len = 0;
+
+        var childIndex = this.getChildNodeIndex(container, node);
+
+        if (childIndex === 0) {
+            return offset;
+        }
+
+        for(i=0; i<childIndex; i++) {
+            text = this.getFirstNodeText(nodeList[i]);
+            len += text.length;
+        }
+
+        return len + offset;
+    },
+
+    setRange: function (startNode, startOffset, endNode, endOffset) {
+        var startText = this.getTextNode(startNode);
+        var endText = this.getTextNode(endNode);
+
+        if(!startText || !endText) {
+            return;
+        }
+
+        var sel = window.getSelection();
+        var range = document.createRange();
+        range.setStart(startText, startOffset);
+        range.setEnd(endText, endOffset);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    },
+
+    getTextNode: function (node) {
+        if (node.nodeName === '#text') {
+            return node;
+        } else if (node.hasChildNodes()) {
+            return this.getFirstNodeText(node, true);
+        } else {
+            return;
+        }
+    },
+
     highlightAllProhibitedWords: function (node, prohibited) {
         var found = false;
 

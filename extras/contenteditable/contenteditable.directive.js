@@ -79,13 +79,13 @@ function contentEditable() {
             function highlightProhibitedWords() {
                 var containerEl = element[0];
 
-                $ctrl.util.saveCaret(containerEl);
+                $ctrl.util.saveAbsoluteRange(containerEl);
 
                 var found = $ctrl.util.highlightAllProhibitedWords(containerEl, $ctrl.prohibitedWords);
 
                 ngModel.$setValidity('myWidget', !found);
 
-                $ctrl.util.restoreCaret(containerEl);
+                $ctrl.util.restoreAbsoluteRange(containerEl);
 
                 scope.$evalAsync(read);
             }

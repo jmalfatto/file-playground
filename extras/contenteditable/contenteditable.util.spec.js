@@ -34,6 +34,10 @@
     testHighlightAllProhibitedWords();
     testSaveCaret();
     testRestoreCaret();
+    testGetAbsoluteRange();
+    testGetRelativeOffsetFromAbsoluteOffset();
+    testSaveAbsoluteRange();
+    testRestoreAbsoluteRange();
 
     console.timeEnd('total');
     console.groupEnd();
@@ -51,9 +55,80 @@
     console.timeEnd('total');
     console.groupEnd();
 
+    window.getSelection().removeAllRanges();
+
     return 'tests complete';
 
     /**** tests ****/
+
+    function testRestoreAbsoluteRange() {
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
+
+        util.restoreAbsoluteRange(global.containerEl);
+
+        var selectedRange = util.getSelectedRange();
+
+        expect(global.containerEl.childNodes.length === 3, 3);
+
+        if (!selectedRange) {
+            expect(false, null, 'no selected range found');
+            return;
+        }
+
+        expect(selectedRange.startOffset === 2, 2);
+        expect(selectedRange.endOffset === 4, 4);
+    }
+
+    function testSaveAbsoluteRange() {
+        var expected = {
+            startOffset: 2,
+            endOffset: 15
+        };
+
+        global.containerEl.textContent = 'thar be red in here';
+
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
+
+        util.setRange(containerEl.firstChild, 2, containerEl.childNodes[2], 4);
+
+        util.saveAbsoluteRange(global.containerEl);
+
+        var actual = util.lastAbsoluteRange;
+
+        expect(JSON.stringify(actual) === JSON.stringify(expected), expected, 'objects do not match')
+    }
+
+    function testGetRelativeOffsetFromAbsoluteOffset() {
+        var expectedNode = util.getFirstNodeText(global.containerEl.childNodes[1], true);
+        var expectedOffset = 1;
+
+        global.containerEl.textContent = 'thar be red in here';
+
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
+
+        var actual = util.getRelativeOffsetFromAbsoluteOffset(global.containerEl, 9);
+
+        expect(actual.node.isEqualNode(expectedNode), null, 'nodes do not match');
+        expect(actual.offset === expectedOffset, expectedOffset);
+    }
+
+
+    function testGetAbsoluteRange() {
+        var expected = {
+            startOffset: 2,
+            endOffset: 15
+        };
+
+        global.containerEl.textContent = 'thar be red in here';
+
+        util.highlightAllProhibitedWords(global.containerEl, prohibited);
+
+        util.setRange(containerEl.firstChild, 2, containerEl.childNodes[2], 4);
+
+        var actual = util.getAbsoluteRange(containerEl);
+
+        expect(JSON.stringify(actual) === JSON.stringify(expected), null, 'objects do not match');
+    }
 
     function testRestoreCaret() {
         util.highlightAllProhibitedWords(global.containerEl, prohibited);
@@ -235,7 +310,7 @@
         expect(actual === expected, expected);
     }
 
-        function testIsCaretAtNodeStartPlain() {
+    function testIsCaretAtNodeStartPlain() {
         var expected = true;
 
         util.removeAllMarkup(global.containerEl);

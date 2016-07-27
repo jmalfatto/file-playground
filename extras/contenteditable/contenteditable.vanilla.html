@@ -91,11 +91,11 @@
     function highlightProhibitedWords() {
         var prohibited = searchstrEl.value.split(' ');
 
-        util.saveCaret(containerEl);
+        util.saveAbsoluteRange(containerEl);
 
         var found = util.highlightAllProhibitedWords(containerEl, prohibited);
 
-        util.restoreCaret(containerEl);
+        util.restoreAbsoluteRange(containerEl);
 
         toggleExclamation(found);
     }
