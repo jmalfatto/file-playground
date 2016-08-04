@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Adjust Image Levels</title>
+
+    <style>
+        .containers {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .container {
+            width: 500px;
+            height: 500px;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container:first-child {
+            margin-right: 12px;
+        }
+
+        .preview {
+            max-width: 100%;
+            max-height: 100%;
+            visibility: hidden;
+        }
+
+        .buttons {
+            width: 1012px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .btn {
+            width: 100px;
+            margin: 1em 0.5em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="containers">
+    <div class="container">
+        <img id="portrait" src="assets/portrait_small.jpg" class="preview" data-caman-hidpi-disabled="true"/>
+    </div>
+    <div class="container">
+        <img id="landscape" src="assets/landscape.png" class="preview" data-caman-hidpi-disabled="true"/>
+    </div>
+</div>
+
+<div class="buttons">
+    <button id="restore" class="btn">Restore</button>
+    <button id="rotate" class="btn">Rotate</button>
+    <button id="upload" class="btn">Upload</button>
+</div>
+
+<script type="text/javascript" src="caman/dist/caman.full.js"></script>
+<script type="text/javascript">
+    'use strict';
+
+    if (!HTMLCanvasElement.prototype.toBlob) {
+        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+
+                var binStr = atob( this.toDataURL(type, quality).split(',')[1] ),
+                        len = binStr.length,
+                        arr = new Uint8Array(len);
+
+                for (var i=0; i<len; i++ ) {
+                    arr[i] = binStr.charCodeAt(i);
+                }
+
+                callback( new Blob( [arr], {type: type || 'image/png'} ) );
+            }
+        });
+    }
+
+    var baseImagePortrait = document.getElementById('portrait'),
+            baseImageLandscape = document.getElementById('landscape'),
+            restore = document.getElementById('restore'),
+            rotate = document.getElementById('rotate'),
+            upload = document.getElementById('upload'),
+            camanPortrait,
+            camanLandscape;
+
+    setTimeout(function () {
+        camanPortrait = Caman(baseImagePortrait, function () {
+            setCanvasStyleSize(this.dimensions, this.canvas);
+
+            this.canvas.style.visibility = 'visible';
+        });
+        camanLandscape = Caman(baseImageLandscape, function () {
+            setCanvasStyleSize(this.dimensions, this.canvas);
+
+            this.canvas.style.visibility = 'visible';
+        });
+    }, 500);
+
+    restore.addEventListener('click', restoreSettings);
+    rotate.addEventListener('click', rotateImages);
+    upload.addEventListener('click', uploadFile);
+
+    function rotateImages() {
+        rotateImage(camanPortrait);
+        rotateImage(camanLandscape);
+    }
+
+    function rotateImage(camanObj) {
+        camanObj.rotate(90);
+        camanObj.render();
+        setCanvasStyleSize(camanObj.dimensions, camanObj.canvas);
+    }
+
+    function restoreSettings() {
+        var camanObj = camanPortrait;
+
+        camanObj.reset();
+        setCanvasStyleSize(camanObj.dimensions, camanObj.canvas);
+
+        camanObj = camanLandscape;
+        camanObj.reset();
+        setCanvasStyleSize(camanObj.dimensions, camanObj.canvas);
+    }
+
+    function uploadFile() {
+        var fileType = 'image/jpeg';
+
+        camanPortrait.render(function() {
+            var blob = camanPortrait.canvas.toBlob(postBlob, fileType);
+        });
+
+        camanLandscape.render(function() {
+            var blob = camanLandscape.canvas.toBlob(postBlob, fileType);
+        });
+    }
+
+    function postBlob(blob) {
+        var formData = new FormData(),
+                fileName = 'file-' + parseInt(Math.random() * 1000) + '.jpg';
+
+
+        formData.append('some-image', blob, fileName);
+
+        var request = new XMLHttpRequest();
+        var url = window.location.protocol + '//' + window.location.host + '/upload';
+
+        request.open('POST', url);
+        request.send(formData);
+
+        request.onload = function (e) {
+            console.log('Request Status', request.status);
+        };
+    }
+
+    function setCanvasStyleSize(oldSize, canvas) {
+        var newSize = getConstrainedImageSize(oldSize.width, oldSize.height, 500, 500);
+
+        console.log(oldSize, newSize);
+
+        canvas.style.width = newSize.width + 'px';
+        canvas.style.height = newSize.height + 'px';
+    }
+
+    function getConstrainedImageSize(originalWidth, originalHeight, maxWidth, maxHeight) {
+        var newWidth = originalWidth,
+                newHeight = originalHeight,
+                ratio;
+
+        if (newHeight > maxHeight) {
+            ratio = maxHeight / newHeight;
+            newHeight = maxHeight;
+            newWidth *= ratio;
+        }
+
+        if (newWidth > maxWidth) {
+            ratio = maxWidth / newWidth;
+            newWidth = maxWidth;
+            newHeight *= ratio;
+        }
+
+        return {
+            width: newWidth,
+            height: newHeight
+        };
+    }
+</script>
+</body>
+</html>
