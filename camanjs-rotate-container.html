@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Adjust Image Levels</title>
-
+    <link href="node_modules/cropperjs/dist/cropper.css" rel="stylesheet">
     <style>
         .containers {
             display: flex;
@@ -39,6 +39,10 @@
             width: 100px;
             margin: 1em 0.5em;
         }
+
+        .buttons.crop {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -52,57 +56,53 @@
     </div>
 </div>
 
+<div class="buttons crop">
+    <button id="confirm" class="btn">Confirm</button>
+    <button id="cancel" class="btn">Cancel</button>
+</div>
+
 <div class="buttons">
     <button id="restore" class="btn">Restore</button>
     <button id="rotate" class="btn">Rotate</button>
+    <button id="crop" class="btn">Crop</button>
     <button id="upload" class="btn">Upload</button>
 </div>
 
 <script type="text/javascript" src="caman/dist/caman.full.js"></script>
+<script type="text/javascript" src="node_modules/cropperjs/dist/cropper.js"></script>
 <script type="text/javascript">
     'use strict';
-
-    if (!HTMLCanvasElement.prototype.toBlob) {
-        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
-            value: function (callback, type, quality) {
-
-                var binStr = atob( this.toDataURL(type, quality).split(',')[1] ),
-                        len = binStr.length,
-                        arr = new Uint8Array(len);
-
-                for (var i=0; i<len; i++ ) {
-                    arr[i] = binStr.charCodeAt(i);
-                }
-
-                callback( new Blob( [arr], {type: type || 'image/png'} ) );
-            }
-        });
-    }
 
     var baseImagePortrait = document.getElementById('portrait'),
             baseImageLandscape = document.getElementById('landscape'),
             restore = document.getElementById('restore'),
             rotate = document.getElementById('rotate'),
             upload = document.getElementById('upload'),
+            crop = document.getElementById('crop'),
+            cropButtons = document.querySelector('.buttons.crop'),
+            confirmCrop = document.getElementById('confirm'),
+            cancelCrop = document.getElementById('cancel'),
             camanPortrait,
-            camanLandscape;
+            camanLandscape,
+            cropperPortrait,
+            cropperLandscape;
 
     setTimeout(function () {
         camanPortrait = Caman(baseImagePortrait, function () {
             setCanvasStyleSize(this.dimensions, this.canvas);
-
-            this.canvas.style.visibility = 'visible';
         });
+
         camanLandscape = Caman(baseImageLandscape, function () {
             setCanvasStyleSize(this.dimensions, this.canvas);
-
-            this.canvas.style.visibility = 'visible';
         });
     }, 500);
 
     restore.addEventListener('click', restoreSettings);
     rotate.addEventListener('click', rotateImages);
     upload.addEventListener('click', uploadFile);
+    crop.addEventListener('click', showCropBoxes);
+    confirmCrop.addEventListener('click', cropImages);
+    cancelCrop.addEventListener('click', cancelImageCrop);
 
     function rotateImages() {
         rotateImage(camanPortrait);
@@ -124,6 +124,119 @@
         camanObj = camanLandscape;
         camanObj.reset();
         setCanvasStyleSize(camanObj.dimensions, camanObj.canvas);
+    }
+
+    function setCanvasStyleSize(oldSize, canvas) {
+        var newSize = getConstrainedImageSize(oldSize.width, oldSize.height, 500, 500);
+
+        console.log(oldSize, newSize);
+
+        canvas.style.width = newSize.width + 'px';
+        canvas.style.height = newSize.height + 'px';
+
+        canvas.style.visibility = 'visible';
+    }
+
+    function getConstrainedImageSize(originalWidth, originalHeight, maxWidth, maxHeight) {
+        var newWidth = originalWidth,
+                newHeight = originalHeight,
+                ratio;
+
+        if (newHeight > maxHeight) {
+            ratio = maxHeight / newHeight;
+            newHeight = maxHeight;
+            newWidth *= ratio;
+        }
+
+        if (newWidth > maxWidth) {
+            ratio = maxWidth / newWidth;
+            newWidth = maxWidth;
+            newHeight *= ratio;
+        }
+
+        return {
+            width: newWidth,
+            height: newHeight
+        };
+    }
+
+    // crop
+
+    function showCropBoxes() {
+        cropperPortrait = createCropBox(document.getElementById('portrait'));
+        cropperLandscape = createCropBox(document.getElementById('landscape'));
+
+        toggleCropButtons(true);
+    }
+
+    function createCropBox(canvas) {
+        return new Cropper(canvas, {
+            background: false,
+            zoomable: false
+        });
+    }
+
+    function cropImages() {
+        cropImage(cropperPortrait, 'portrait', camanPortrait);
+        cropImage(cropperLandscape, 'landscape', camanLandscape);
+    }
+
+    function cropImage(cropper, id, caman) {
+        var newCanvas = cropper.getCroppedCanvas();
+
+        newCanvas.id = id;
+        newCanvas.classList.add('preview');
+        newCanvas.setAttribute('data-caman-hidpi-disabled', 'true');
+
+        cropper.destroy();
+
+        caman.replaceCanvas(newCanvas);
+
+        setCanvasStyleSize(caman.dimensions, caman.canvas);
+
+        toggleCropButtons(false);
+    }
+
+    function cancelImageCrop() {
+        cropperPortrait.destroy();
+        cropperLandscape.destroy();
+
+        toggleCropButtons(false);
+    }
+
+    function toggleCropButtons(show) {
+        if (show) {
+            cropButtons.style.display = 'flex';
+            rotate.disabled = true;
+            crop.disabled = true;
+            restore.disabled = true;
+            upload.disabled = true;
+            return;
+        }
+        cropButtons.style.display = 'none';
+        rotate.disabled = false;
+        crop.disabled = false;
+        restore.disabled = false;
+        upload.disabled = false;
+    }
+
+    // file upload
+
+    if (!HTMLCanvasElement.prototype.toBlob) {
+        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+
+                var binStr = atob( this.toDataURL(type, quality).split(',')[1] ),
+                        len = binStr.length,
+                        arr = new Uint8Array(len);
+
+                for (var i=0; i<len; i++ ) {
+                    arr[i] = binStr.charCodeAt(i);
+                }
+
+                callback( new Blob( [arr], {type: type || 'image/png'} ) );
+            }
+        });
     }
 
     function uploadFile() {
@@ -156,37 +269,6 @@
         };
     }
 
-    function setCanvasStyleSize(oldSize, canvas) {
-        var newSize = getConstrainedImageSize(oldSize.width, oldSize.height, 500, 500);
-
-        console.log(oldSize, newSize);
-
-        canvas.style.width = newSize.width + 'px';
-        canvas.style.height = newSize.height + 'px';
-    }
-
-    function getConstrainedImageSize(originalWidth, originalHeight, maxWidth, maxHeight) {
-        var newWidth = originalWidth,
-                newHeight = originalHeight,
-                ratio;
-
-        if (newHeight > maxHeight) {
-            ratio = maxHeight / newHeight;
-            newHeight = maxHeight;
-            newWidth *= ratio;
-        }
-
-        if (newWidth > maxWidth) {
-            ratio = maxWidth / newWidth;
-            newWidth = maxWidth;
-            newHeight *= ratio;
-        }
-
-        return {
-            width: newWidth,
-            height: newHeight
-        };
-    }
 </script>
 </body>
 </html>
