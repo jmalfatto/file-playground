@@ -63,36 +63,46 @@
             var files = dt.files;
 
             handleFiles(files);
-            
+
             e.target.className = "";
         }
         
-        function handleFiles(files) {
-            for (var i = 0; i < files.length; i++) {
-                var file = files[i];
+        function handleFiles(input) {
+            let files = Array.prototype.slice.call(input);
 
+            function handleFile(file) {
                 // use constructor to create new image object with css class
-                var img = new Image();
+                var img = new Image(),
+                        reader = new FileReader();
+
                 img.classList.add('obj');
 
                 /**
                  * read file and, in the event that the file is loaded,
                  * set image source, log info in console, and append image to dom
                  */
-                var reader = new FileReader();
                 reader.onload = (function (imgEle) {
                     return function (e) {
                         imgEle.src = e.target.result;
                         logImageInfo(file, imgEle);
                         preview.appendChild(imgEle);
+
+                        if (files.length > 0) {
+                            handleFile(files.shift());
+                        } else {
+
+                        }
                     };
                 })(img);
                 reader.readAsDataURL(file);
             }
+
+            handleFile(files.shift());
+
         }
 
         function logImageInfo(file, imgEle) {
-            console.log('file name', file.name);
+            console.info('file name', file.name);
             console.log('file size', Math.round(file.size/1000) + ' KB');
             console.log('pixel dimensions', imgEle.naturalWidth + ' wide', imgEle.naturalHeight + ' high');
         }
