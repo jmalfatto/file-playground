@@ -62,13 +62,32 @@
             var dt = e.dataTransfer;
             var files = dt.files;
 
-            handleFiles(files);
+            if (window.Worker) {
+                var worker = new Worker('worker.js');
 
-            e.target.className = "";
+                worker.onmessage = function(e) {
+                    var img = new Image();
+
+                    img.classList.add('obj');
+                    img.onload = function (e) {
+                        var ratio = 10;
+                        this.width = this.naturalWidth / ratio;
+                        this.height = this.naturalHeight / ratio;
+                    };
+                    img.src = e.data;
+                    preview.appendChild(img);
+                }
+
+                worker.postMessage(Array.prototype.slice.call(files));
+            } else {
+                handleFiles(files);
+            }
+
+            e.target.className = '';
         }
         
         function handleFiles(input) {
-            let files = Array.prototype.slice.call(input);
+            var files = Array.prototype.slice.call(input);
 
             function handleFile(file) {
                 // use constructor to create new image object with css class
@@ -89,8 +108,6 @@
 
                         if (files.length > 0) {
                             handleFile(files.shift());
-                        } else {
-
                         }
                     };
                 })(img);
