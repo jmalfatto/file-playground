@@ -28,49 +28,111 @@
 <div id="preview"></div>
 
 <script>
-    var filesInput = document.getElementById('files');
+    var filesInput = document.getElementById('files'),
+            resize = true,
+            start, end, time;
 
-    filesInput.addEventListener('change', previewFile, false);
+    filesInput.addEventListener('change', processFile, false);
 
-    function previewFile(e) {
-        console.time(); // fails in firefox
+    function processFile(e) {
+        start = new Date().getTime();
 
-        handleFiles(e.target.files);
+        var files = Array.prototype.slice.call(e.target.files);
 
-        function handleFiles(input) {
-            var files = Array.prototype.slice.call(input);
-            var urls = [];
+        previewFile(files);
+    }
+
+    function previewFile(files) {
+
+        handleFiles(files);
+
+        function handleFiles(files) {
 
             function handleFile(file) {
                 // use constructor to create new image object with css class
                 var img = new Image(),
-                        url = window.URL.createObjectURL(file);
-
-                urls.push(url);
+                        url = window.URL.createObjectURL(file), size;
 
                 img.classList.add('obj');
-                img.onload = function() {
+                img.onload = function () {
                     window.URL.revokeObjectURL(this.src);
 
-                    var order = (file.size/1000000 > 1) ? 'MB' : 'KB';
-                    var divisor = order === 'MB' ? 1000000 : 1000;
+                    if (resize) {
+                        var canvas = document.createElement('canvas'),
+                                size = getConstrainedImageSize(this.naturalWidth, this.naturalHeight, 1000, 1000);
 
-                    console.log(file.name, (file.size/divisor).toFixed(2) + ' ' + order, this.naturalWidth, this.naturalHeight);
+                        canvas.width = size.width;
+                        canvas.height = size.height;
+
+                        canvas.getContext('2d').drawImage(img, 0, 0, size.width, size.height);
+
+                        this.onload = function () {
+                            preview.appendChild(this);
+
+                            logImage(file, this);
+
+                            if (files.length > 0) {
+                                handleFile(files.shift());
+                            } else {
+                                logTime();
+                            }
+                        };
+                        this.src = canvas.toDataURL();
+                    } else {
+                        preview.appendChild(this);
+
+                        logImage(file, this);
+
+                        if (files.length > 0) {
+                            handleFile(files.shift());
+                        } else {
+                            logTime();
+                        }
+                    }
                 };
                 img.src = url;
-
-                preview.appendChild(img);
-
-                if (files.length > 0) {
-                    handleFile(files.shift());
-                } else {
-                    console.timeEnd();
-                }
             }
 
             handleFile(files.shift());
 
         }
+    }
+
+    function getConstrainedImageSize(originalWidth, originalHeight, maxWidth, maxHeight) {
+        var newWidth = originalWidth,
+                newHeight = originalHeight,
+                ratio;
+
+        if (newHeight > maxHeight) {
+            ratio = maxHeight / newHeight;
+            newHeight = maxHeight;
+            newWidth *= ratio;
+        }
+
+        if (newWidth > maxWidth) {
+            ratio = maxWidth / newWidth;
+            newWidth = maxWidth;
+            newHeight *= ratio;
+        }
+
+        return {
+            width: newWidth,
+            height: newHeight
+        };
+    }
+
+    function logImage(file, img) {
+        // log img info
+        var order = (file.size/1000000 > 1) ? 'MB' : 'KB';
+        var divisor = order === 'MB' ? 1000000 : 1000;
+
+        console.log(file.name, (file.size/divisor).toFixed(2) + ' ' + order, img.naturalWidth, img.naturalHeight);
+    }
+
+    function logTime() {
+        end = new Date().getTime();
+        time = end - start;
+        console.info(time/1000 + 's');
     }
 </script>
 
