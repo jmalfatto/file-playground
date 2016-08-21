@@ -33,7 +33,7 @@
     filesInput.addEventListener('change', previewFile, false);
 
     function previewFile(e) {
-        console.time();
+        console.time(); // fails in firefox
 
         handleFiles(e.target.files);
 
@@ -51,6 +51,11 @@
                 img.classList.add('obj');
                 img.onload = function() {
                     window.URL.revokeObjectURL(this.src);
+
+                    var order = (file.size/1000000 > 1) ? 'MB' : 'KB';
+                    var divisor = order === 'MB' ? 1000000 : 1000;
+
+                    console.log(file.name, (file.size/divisor).toFixed(2) + ' ' + order, this.naturalWidth, this.naturalHeight);
                 };
                 img.src = url;
 

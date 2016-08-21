@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>File Drag & Drop</title>
+
+    <link href="https://npmcdn.com/basscss@8.0.1/css/basscss.min.css" rel="stylesheet">
+
+    <style>
+        #preview {
+            margin: 10px 0;
+        }
+
+        .obj {
+            max-height: 300px;
+            margin-right: 1em;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<form>
+    <input type="file" id="files" multiple>
+</form>
+
+<canvas id="preview"></canvas>
+
+<script>
+    var filesInput = document.getElementById('files'),
+            canvas = document.getElementById('preview');
+
+    filesInput.addEventListener('change', previewFile, false);
+
+    function previewFile(e) {
+
+        draw(e.target.files[0]);
+
+    }
+
+    function draw(file) {
+        // use constructor to create new image object with css class
+        var img = new Image(),
+                url = window.URL.createObjectURL(file),
+                ctx = canvas.getContext('2d');
+
+        img.onload = function() {
+            var size = getConstrainedImageSize(this.naturalWidth, this.naturalHeight, 1000, 1000);
+
+            canvas.width = size.width;
+            canvas.height = size.height;
+            ctx.drawImage(img, 0, 0, size.width, size.height);
+        };
+        img.src = url;
+
+    }
+
+    function getConstrainedImageSize(originalWidth, originalHeight, maxWidth, maxHeight) {
+        var newWidth = originalWidth,
+                newHeight = originalHeight,
+                ratio;
+
+        if (newHeight > maxHeight) {
+            ratio = maxHeight / newHeight;
+            newHeight = maxHeight;
+            newWidth *= ratio;
+        }
+
+        if (newWidth > maxWidth) {
+            ratio = maxWidth / newWidth;
+            newWidth = maxWidth;
+            newHeight *= ratio;
+        }
+
+        return {
+            width: newWidth,
+            height: newHeight
+        };
+    }
+</script>
+
+</body>
+</html>
