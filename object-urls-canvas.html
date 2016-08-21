@@ -22,16 +22,19 @@
 <body>
 
 <form>
-    <input type="file" id="files" multiple>
+    <input type="file" id="files" multiple><br>
+    <button type="button" id="upload">Upload</button>
 </form>
 
 <canvas id="preview"></canvas>
 
 <script>
     var filesInput = document.getElementById('files'),
+            uploadButton = document.getElementById('upload'),
             canvas = document.getElementById('preview');
 
     filesInput.addEventListener('change', previewFile, false);
+    uploadButton.addEventListener('click', uploadFile);
 
     function previewFile(e) {
 
@@ -48,9 +51,13 @@
         img.onload = function() {
             var size = getConstrainedImageSize(this.naturalWidth, this.naturalHeight, 1000, 1000);
 
-            canvas.width = size.width;
-            canvas.height = size.height;
-            ctx.drawImage(img, 0, 0, size.width, size.height);
+            canvas.width = this.naturalWidth;
+            canvas.height = this.naturalHeight;
+
+            canvas.style.width = size.width + 'px';
+            canvas.style.height = size.height + 'px';
+
+            ctx.drawImage(img, 0, 0);
         };
         img.src = url;
 
@@ -76,6 +83,25 @@
         return {
             width: newWidth,
             height: newHeight
+        };
+    }
+
+    function uploadFile() {
+        canvas.toBlob(postBlob, 'image/jpeg');
+    }
+
+    function postBlob(blob) {
+        var formData = new FormData();
+        formData.append('some-image', blob, 'some-image.jpg');
+
+        var request = new XMLHttpRequest();
+        var url = window.location.protocol + '//' + window.location.host + '/upload';
+
+        request.open('POST', url);
+        request.send(formData);
+
+        request.onload = function (e) {
+            console.log('Request Status', request.status);
         };
     }
 </script>
