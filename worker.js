@@ -3,6 +3,7 @@ onmessage = function(e) {
 }
 
 function handleFiles(files) {
+    var start = new Date().getTime();
 
     function handleFile(file) {
         var reader = new FileReader();
@@ -16,6 +17,11 @@ function handleFiles(files) {
                 setTimeout(function () {
                     handleFile(files.shift());
                 }, 250);
+            } else {
+                var end = new Date().getTime();
+                var time = end - start;
+
+                console.log(time/1000 + 's');
             }
         };
 

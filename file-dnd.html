@@ -62,7 +62,7 @@
             var dt = e.dataTransfer;
             var files = dt.files;
 
-            if (window.Worker) {
+            if (false && window.Worker) {
                 var worker = new Worker('worker.js');
 
                 worker.onmessage = function(e) {
@@ -87,6 +87,8 @@
         }
         
         function handleFiles(input) {
+            var start = new Date().getTime();
+
             var files = Array.prototype.slice.call(input);
 
             function handleFile(file) {
@@ -108,6 +110,10 @@
 
                         if (files.length > 0) {
                             handleFile(files.shift());
+                        } else {
+                            var end = new Date().getTime();
+                            var time = end - start;
+                            console.info(time/1000 + 's');
                         }
                     };
                 })(img);
