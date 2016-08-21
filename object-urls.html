@@ -28,6 +28,23 @@
 <div id="preview"></div>
 
 <script>
+    if (!HTMLCanvasElement.prototype.toBlob) {
+        Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+            value: function (callback, type, quality) {
+
+                var binStr = atob( this.toDataURL(type, quality).split(',')[1] ),
+                        len = binStr.length,
+                        arr = new Uint8Array(len);
+
+                for (var i=0; i<len; i++ ) {
+                    arr[i] = binStr.charCodeAt(i);
+                }
+
+                callback( new Blob( [arr], {type: type || 'image/png'} ) );
+            }
+        });
+    }
+
     var filesInput = document.getElementById('files'),
             resize = true,
             start, end, time;
@@ -67,6 +84,7 @@
                         canvas.getContext('2d').drawImage(img, 0, 0, size.width, size.height);
 
                         this.onload = function () {
+                            window.URL.revokeObjectURL(this.src);
                             preview.appendChild(this);
 
                             logImage(file, this);
@@ -77,7 +95,11 @@
                                 logTime();
                             }
                         };
-                        this.src = canvas.toDataURL();
+
+                        canvas.toBlob(function (blob) {
+                            url = window.URL.createObjectURL(blob);
+                            img.src = url;
+                        }, 'image/jpeg', 0.75);
                     } else {
                         preview.appendChild(this);
 
