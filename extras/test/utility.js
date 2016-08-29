@@ -4,8 +4,12 @@ export default class Utility {
         this.place = 'utility';
     }
 
-    addFn(fn) {
+    execFnAndDelayedTest(fn, test, delay) {
         fn();
+
+        if (test) {
+            setTimeout(test, delay);
+        }
     }
 
 };

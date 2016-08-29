@@ -15,17 +15,15 @@ export default class Main {
     getToken() {
         return this.token;
     }
-    
-    addFnToQueue(token) {
-        this.utility.addFn(() => {
+
+    runScopeTest(test) {
+        test();
+    }
+
+    setTokenWithTest(token, test, delay) {
+        this.utility.execFnAndDelayedTest(() => {
             this.setToken(token);
-
-            console.log('before timeout', this.getToken());
-
-            setTimeout(() => {
-                console.log('after timeout', this.getToken());
-            }, 3000);
-        });
+        }, test, delay);
     }
 
 }
