@@ -93,8 +93,7 @@
 
             function handleFile(file) {
                 // use constructor to create new image object with css class
-                var img = new Image(),
-                        reader = new FileReader();
+                var img = new Image(), url;
 
                 img.classList.add('obj');
 
@@ -102,22 +101,21 @@
                  * read file and, in the event that the file is loaded,
                  * set image source, log info in console, and append image to dom
                  */
-                reader.onload = (function (imgEle) {
-                    return function (e) {
-                        imgEle.src = e.target.result;
-                        logImageInfo(file, imgEle);
-                        preview.appendChild(imgEle);
+                url = window.URL.createObjectURL(file)
+                img.onload = function (e) {
+                    logImageInfo(file, this);
+                    preview.appendChild(this);
+                    window.URL.revokeObjectURL(url);
 
-                        if (files.length > 0) {
-                            handleFile(files.shift());
-                        } else {
-                            var end = new Date().getTime();
-                            var time = end - start;
-                            console.info(time/1000 + 's');
-                        }
-                    };
-                })(img);
-                reader.readAsDataURL(file);
+                    if (files.length > 0) {
+                        handleFile(files.shift());
+                    } else {
+                        var end = new Date().getTime();
+                        var time = end - start;
+                        console.info(time/1000 + 's');
+                    }
+                };
+                img.src = url;
             }
 
             handleFile(files.shift());
