@@ -34,6 +34,7 @@
     <script>
         var dropbox = document.getElementById("dropbox"),
             preview = document.getElementById("preview"),
+            numberOfFiles = 0;
             fileSizeTotalMB = 0;
 
         window.addEventListener("dragenter", stopIt, false);
@@ -92,6 +93,29 @@
 
             var files = Array.prototype.slice.call(input);
 
+            var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        if (files.length > 0) {
+                            handleFile(files.shift());
+                        } else {
+                            var end = new Date().getTime();
+                            var time = end - start;
+
+                            console.info(time/1000 + 's');
+                            console.info(numberOfFiles + ' files added total');
+                            console.info(fileSizeTotalMB.toFixed(2) + ' MB total');
+
+                            observer.disconnect();
+                        }
+                    }
+                });
+            });
+
+            var target = preview;
+            var config = { childList: true };
+            observer.observe(target, config);
+
             function handleFile(file) {
                 // use constructor to create new image object with css class
                 var img = new Image(), url;
@@ -102,24 +126,16 @@
                  * read file and, in the event that the file is loaded,
                  * set image source, log info in console, and append image to dom
                  */
-                url = window.URL.createObjectURL(file)
+                url = window.URL.createObjectURL(file);
                 img.onload = function (e) {
                     logImageInfo(file, this);
                     preview.appendChild(this);
                     window.URL.revokeObjectURL(url);
-
-                    if (files.length > 0) {
-                        handleFile(files.shift());
-                    } else {
-                        var end = new Date().getTime();
-                        var time = end - start;
-
-                        console.info(time/1000 + 's');
-                        console.info(fileSizeTotalMB.toFixed(2) + ' MB total');
-                    }
                 };
                 img.src = url;
             }
+
+            numberOfFiles += files.length;
 
             handleFile(files.shift());
 
