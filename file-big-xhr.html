@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>File Big</title>
+
+    <style>
+        #preview {
+            max-height: 300px;
+            margin-right: 1em;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<img id="preview">
+
+<script>
+    var imageUrl = 'https://dl.dropboxusercontent.com/1/view/m3nihf9ml44q1c2/Ultra_Large_Photos/boulder_oli_2013077_full_xlrg.jpg';
+    var tempUrl;
+
+    //loadRemoteImage();
+
+    loadRemoteImageByXhr();
+
+    function loadRemoteImage() {
+        var img = new Image();
+
+        img.onload = function() {
+            console.log('done', this);
+        };
+        img.src = imageUrl;
+    }
+
+    function loadRemoteImageByXhr() {
+
+        var xhr = new XMLHttpRequest();
+
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === 4) {
+                var blob = new Blob([this.response], {type: 'image/jpeg'});
+                var img = new Image();
+
+                tempUrl = URL.createObjectURL(blob);
+                img.onload = function() {
+                    console.log('download done');
+                    reduceImageForPreview(this);
+                };
+                img.src = tempUrl;
+            }
+        });
+
+        xhr.open('GET', imageUrl);
+        xhr.responseType = 'arraybuffer';
+        xhr.setRequestHeader('cache-control', 'no-cache');
+
+        xhr.send(null);
+
+    }
+
+    function reduceImageForPreview(img) {
+        var max = 300;
+        var canvas = document.createElement('canvas');
+        var ctx=canvas.getContext('2d');
+        var iw=img.width;
+        var ih=img.height;
+        var scale=Math.min((max/iw),(max/ih));
+        var iwScaled=iw*scale;
+        var ihScaled=ih*scale;
+        canvas.width=iwScaled;
+        canvas.height=ihScaled;
+        ctx.drawImage(img,0,0,iwScaled,ihScaled);
+
+        canvas.toBlob(function (blob) {
+            var previewUrl, previewEle;
+            console.log('new size', blob.size);
+            previewUrl = URL.createObjectURL(blob);
+            URL.revokeObjectURL(tempUrl);
+            img = null;
+
+            previewEle = document.getElementById('preview');
+            console.log('ready to display reduced image');
+            previewEle.src = previewUrl;
+        }, 'image/jpeg', 0.7);
+    }
+
+
+</script>
+
+</body>
+</html>
