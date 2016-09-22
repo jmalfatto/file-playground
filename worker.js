@@ -31,7 +31,41 @@ function handleFiles(files) {
     handleFile(files.shift());
 }
 
+function logFileAsArrayBuffer(file) {
+
+}
+
+function isValidJpeg(file) {
+    var reader = new FileReader();
+
+    reader.onload = function(evt) {
+        var valid, arrayBuffer, byteArray, magicNumbers;
+        if (evt.target.readyState == FileReader.DONE) {
+            arrayBuffer = evt.target.result;
+
+            if (arrayBuffer) {
+                byteArray = new Uint8Array(arrayBuffer);
+
+                if (byteArray && byteArray.length > 4) {
+                    magicNumbers = [
+                        byteArray[0].toString(16),
+                        byteArray[1].toString(16),
+                        byteArray[byteArray.length - 2].toString(16),
+                        byteArray[byteArray.length - 1].toString(16)
+                    ];
+                    valid = magicNumbers[0].toLowerCase() === 'ff' && magicNumbers[1].toLowerCase() === 'd8'
+                        && magicNumbers[2].toLowerCase() === 'ff' && magicNumbers[3].toLowerCase() === 'd9';
+                    console.info('is valid jpeg', valid);
+                }
+            }
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
 function logInfo(file) {
     console.info('file name', file.name);
     console.log('file size', Math.round(file.size/1000) + ' KB');
+    isValidJpeg(file);
 }
