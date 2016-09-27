@@ -1,5 +1,6 @@
 onmessage = function(e) {
-    handleFiles(e.data);
+    //handleFiles(e.data);
+    getFileClone(e.data[0]);
 }
 
 function handleFiles(files) {
@@ -31,36 +32,25 @@ function handleFiles(files) {
     handleFile(files.shift());
 }
 
-function logFileAsArrayBuffer(file) {
-
-}
-
-function isValidJpeg(file) {
+function getFileClone(file) {
     var reader = new FileReader();
 
     reader.onload = function(evt) {
-        var valid, arrayBuffer, byteArray, magicNumbers;
+        var buffer, typedArray, blob;
         if (evt.target.readyState == FileReader.DONE) {
-            arrayBuffer = evt.target.result;
+            buffer = evt.target.result;
 
-            if (arrayBuffer) {
-                byteArray = new Uint8Array(arrayBuffer);
+            if (buffer) {
+                typedArray = new Uint8Array(buffer);
+                typedArray[typedArray.length-1] = 0xDD; // demonstrate that browser forgives invalid footer (not header, though!)
 
-                if (byteArray && byteArray.length > 4) {
-                    magicNumbers = [
-                        byteArray[0],
-                        byteArray[1],
-                        byteArray[byteArray.length - 2],
-                        byteArray[byteArray.length - 1]
-                    ];
-                    valid = magicNumbers[0] === 0xFF && magicNumbers[1] === 0xD8
-                        && magicNumbers[2] === 0xFF && magicNumbers[3] === 0xD9;
-                    console.info('is valid jpeg', valid, magicNumbers);
+                blob = new Blob([typedArray], { type: 'image/jpeg' });
 
-                    if (valid) {
-                        modifyJpeg(arrayBuffer);
-                    }
-                }
+                logInfo(blob);
+
+                var url = URL.createObjectURL(blob);
+
+                postMessage(url);
             }
         }
     };
@@ -68,8 +58,34 @@ function isValidJpeg(file) {
     reader.readAsArrayBuffer(file);
 }
 
-function modifyJpeg(arrayBuffer) {
+function isValidJpeg(file) {
+    var reader = new FileReader();
 
+    reader.onload = function(evt) {
+        var valid, arrayBuffer, typedArray, magicNumbers;
+        if (evt.target.readyState == FileReader.DONE) {
+            arrayBuffer = evt.target.result;
+
+            if (arrayBuffer) {
+                typedArray = new Uint8Array(arrayBuffer);
+
+                if (typedArray && typedArray.length >= 4) {
+                    magicNumbers = [
+                        typedArray[0],
+                        typedArray[1],
+                        typedArray[typedArray.length - 2],
+                        typedArray[typedArray.length - 1]
+                    ];
+                    valid = magicNumbers[0] === 0xFF && magicNumbers[1] === 0xD8
+                        && magicNumbers[2] === 0xFF && magicNumbers[3] === 0xD9;
+
+                    console.info('is valid jpeg', valid, magicNumbers);
+                }
+            }
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
 }
 
 function logInfo(file) {

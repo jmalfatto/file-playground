@@ -64,7 +64,7 @@
             var dt = e.dataTransfer;
             var files = dt.files;
 
-            if (false && window.Worker) {
+            if (window.Worker) {
                 var worker = new Worker('worker.js');
 
                 worker.onmessage = function(e) {
