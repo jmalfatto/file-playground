@@ -48,20 +48,28 @@ function isValidJpeg(file) {
 
                 if (byteArray && byteArray.length > 4) {
                     magicNumbers = [
-                        byteArray[0].toString(16),
-                        byteArray[1].toString(16),
-                        byteArray[byteArray.length - 2].toString(16),
-                        byteArray[byteArray.length - 1].toString(16)
+                        byteArray[0],
+                        byteArray[1],
+                        byteArray[byteArray.length - 2],
+                        byteArray[byteArray.length - 1]
                     ];
-                    valid = magicNumbers[0].toLowerCase() === 'ff' && magicNumbers[1].toLowerCase() === 'd8'
-                        && magicNumbers[2].toLowerCase() === 'ff' && magicNumbers[3].toLowerCase() === 'd9';
-                    console.info('is valid jpeg', valid);
+                    valid = magicNumbers[0] === 0xFF && magicNumbers[1] === 0xD8
+                        && magicNumbers[2] === 0xFF && magicNumbers[3] === 0xD9;
+                    console.info('is valid jpeg', valid, magicNumbers);
+
+                    if (valid) {
+                        modifyJpeg(arrayBuffer);
+                    }
                 }
             }
         }
     };
 
     reader.readAsArrayBuffer(file);
+}
+
+function modifyJpeg(arrayBuffer) {
+
 }
 
 function logInfo(file) {
