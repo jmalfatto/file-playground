@@ -5,7 +5,7 @@
 <title>File Drag & Drop</title>
 
     <link href="https://unpkg.com/basscss@8.0.1/css/basscss.min.css" rel="stylesheet">
-    
+
     <style>
         #dropbox {
             text-align: center;
@@ -18,19 +18,19 @@
         #dropbox.hover {
             border-color: red;
         }
-        .obj { 
+        .obj {
             max-height: 300px;
-            margin-right: 1em; 
+            margin-right: 1em;
         }
     </style>
-    
+
 </head>
 
 <body>
     <div id="dropbox">drop files here</div>
-    
+
     <div id="preview"></div>
-    
+
     <script>
         var dropbox = document.getElementById("dropbox"),
             preview = document.getElementById("preview"),
@@ -44,19 +44,19 @@
         dropbox.addEventListener("dragenter", stopIt, false);
         dropbox.addEventListener("dragover", dragOver, false);
         dropbox.addEventListener("drop", drop, false);
-        
+
         function stopIt(e) {
             e.stopPropagation();
             e.preventDefault();
         }
-        
+
         function dragOver(e) {
             e.stopPropagation();
             e.preventDefault();
-            
+
             e.target.className = "hover";
         }
-        
+
         function drop(e) {
             e.stopPropagation();
             e.preventDefault();
@@ -87,7 +87,7 @@
 
             e.target.className = '';
         }
-        
+
         function handleFiles(input) {
             var start = new Date().getTime();
 
